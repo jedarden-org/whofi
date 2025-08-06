@@ -11,7 +11,7 @@ jobs:
   firmware-test:
     runs-on: jedarden-org-apexalgo-iad-runners
     container:
-      image: espressif/idf:latest
+      image: espressif/idf:v5.1.2
     steps:
     - uses: actions/checkout@v3
     
@@ -24,8 +24,9 @@ jobs:
     - name: Run Firmware Tests
       working-directory: csi-firmware
       run: |
-        . $IDF_PATH/export.sh
-        idf.py test
+        cd test
+        chmod +x run_tests.sh
+        ./run_tests.sh
 
   # Docker Server Build and Test
   server-test:
@@ -47,6 +48,13 @@ jobs:
     - name: Run Backend Tests
       working-directory: csi-server/backend
       run: npm test
+    
+    - name: Setup Node.js for Frontend
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: csi-server/frontend/package-lock.json
     
     - name: Install Frontend Dependencies
       working-directory: csi-server/frontend
