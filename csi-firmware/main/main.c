@@ -209,7 +209,7 @@ static void app_main_task(void *pvParameters)
                 ntp_sync_quality_t quality;
                 if (ntp_client_get_sync_quality(&quality) == ESP_OK) {
                     const char *quality_str[] = {"POOR", "FAIR", "GOOD", "EXCELLENT"};
-                    ESP_LOGI(TAG, "NTP quality: %s (offset: %dms, age: %llus)", 
+                    ESP_LOGI(TAG, "NTP quality: %s (offset: %dms, age: %" PRIu64 "s)", 
                              quality_str[quality.quality], quality.offset_ms, quality.time_since_sync_sec);
                 }
             } else {

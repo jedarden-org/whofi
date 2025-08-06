@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <sys/time.h>
+#include <inttypes.h>
 
 #include <unity.h>
 #include "esp_system.h"
@@ -360,7 +361,7 @@ void test_ntp_client_sync_quality(void)
     TEST_ASSERT_FALSE(quality.synchronized);
     TEST_ASSERT_EQUAL(NTP_QUALITY_POOR, quality.quality);
     
-    ESP_LOGI(TAG, "Sync quality: %s, offset: %dms, age: %llus", 
+    ESP_LOGI(TAG, "Sync quality: %s, offset: %dms, age: %" PRIu64 "s", 
              quality.synchronized ? "synchronized" : "not synchronized",
              quality.offset_ms, quality.time_since_sync_sec);
     

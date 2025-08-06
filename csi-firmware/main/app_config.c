@@ -373,7 +373,7 @@ esp_err_t app_config_validate(const app_config_t *config)
     }
 
     // Validate web server configuration
-    if (config->web_server.port == 0 || config->web_server.port > 65535) {
+    if (config->web_server.port == 0) {
         ESP_LOGE(TAG, "Invalid web server port: %d", config->web_server.port);
         return ESP_ERR_INVALID_ARG;
     }
@@ -385,7 +385,7 @@ esp_err_t app_config_validate(const app_config_t *config)
             return ESP_ERR_INVALID_ARG;
         }
 
-        if (config->mqtt.port == 0 || config->mqtt.port > 65535) {
+        if (config->mqtt.port == 0) {
             ESP_LOGE(TAG, "Invalid MQTT port: %d", config->mqtt.port);
             return ESP_ERR_INVALID_ARG;
         }

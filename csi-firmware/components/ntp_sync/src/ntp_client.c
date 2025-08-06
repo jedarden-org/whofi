@@ -12,6 +12,7 @@
 #include <time.h>
 #include <sys/time.h>
 #include <math.h>
+#include <inttypes.h>
 
 #include <esp_log.h>
 #include <esp_err.h>
@@ -313,7 +314,7 @@ esp_err_t ntp_client_get_sync_quality(ntp_sync_quality_t *quality)
     }
 
     const char *quality_str[] = {"POOR", "FAIR", "GOOD", "EXCELLENT"};
-    ESP_LOGI(TAG, "NTP sync quality: %s (offset: %dms, age: %llus)", 
+    ESP_LOGI(TAG, "NTP sync quality: %s (offset: %dms, age: %" PRIu64 "s)", 
              quality_str[quality->quality], quality->offset_ms, quality->time_since_sync_sec);
 
     return ESP_OK;
