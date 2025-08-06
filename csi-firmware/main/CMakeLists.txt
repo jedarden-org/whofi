@@ -4,6 +4,7 @@ idf_component_register(
         "main.c"
         "app_config.c"
         "system_init.c"
+        "remote_config.c"
     INCLUDE_DIRS 
         "."
     REQUIRES 
