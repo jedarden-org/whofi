@@ -10,14 +10,14 @@ RUN apk add --no-cache \
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Copy package files from backend directory
+COPY backend/package*.json ./
 
 # Install npm dependencies
 RUN npm ci --only=production && npm cache clean --force
 
-# Copy application files
-COPY . .
+# Copy application files from backend directory
+COPY backend/ .
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
