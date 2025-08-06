@@ -22,17 +22,3 @@ project(${PROJECT_NAME})
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug")
 endif()
-
-# Add compile definitions
-target_compile_definitions(${CMAKE_PROJECT_NAME}.elf PRIVATE
-    PROJECT_VER="${PROJECT_VER}"
-    CONFIG_CSI_ENABLED=1
-)
-
-# Enable additional warnings for better code quality
-target_compile_options(${CMAKE_PROJECT_NAME}.elf PRIVATE
-    -Wall
-    -Wextra
-    -Wno-unused-parameter
-    -Wno-missing-field-initializers
-)
