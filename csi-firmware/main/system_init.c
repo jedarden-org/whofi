@@ -154,7 +154,7 @@ esp_err_t filesystem_init(void)
     };
 
     wl_handle_t wl_handle;
-    err = esp_vfs_fat_spiflash_mount("/data", "csi_data", &mount_config, &wl_handle);
+    err = esp_vfs_fat_spiflash_mount_rw_wl("/data", "csi_data", &mount_config, &wl_handle);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to mount FAT filesystem: %s", esp_err_to_name(err));
         return err;

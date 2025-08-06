@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <inttypes.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <freertos/event_groups.h>
@@ -220,7 +221,7 @@ static void app_main_task(void *pvParameters)
                 if (mqtt_client_is_connected()) {
                     mqtt_stats_t mqtt_stats;
                     if (mqtt_client_get_stats(&mqtt_stats) == ESP_OK) {
-                        ESP_LOGI(TAG, "MQTT: connected, sent: %u, received: %u, errors: %u", 
+                        ESP_LOGI(TAG, "MQTT: connected, sent: %" PRIu32 ", received: %" PRIu32 ", errors: %" PRIu32, 
                                 mqtt_stats.messages_sent, mqtt_stats.messages_received, 
                                 mqtt_stats.connection_errors);
                     }
