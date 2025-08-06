@@ -10,20 +10,34 @@ jobs:
   # ESP32 Firmware Build and Test
   firmware-test:
     runs-on: jedarden-org-apexalgo-iad-runners
-    container:
-      image: espressif/idf:v5.1.2
     steps:
     - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+    
+    - name: Install ESP-IDF Prerequisites
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y git wget flex bison gperf python3 python3-pip python3-venv cmake ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0
+    
+    - name: Install ESP-IDF
+      run: |
+        mkdir -p ~/esp
+        cd ~/esp
+        git clone -b v5.1.2 --recursive https://github.com/espressif/esp-idf.git
+        cd esp-idf
+        ./install.sh esp32,esp32s3
     
     - name: Build ESP32 Firmware
       working-directory: csi-firmware
       run: |
-        . $IDF_PATH/export.sh
+        . ~/esp/esp-idf/export.sh
         idf.py build
     
     - name: Run Firmware Tests
       working-directory: csi-firmware
       run: |
+        . ~/esp/esp-idf/export.sh
         cd test
         chmod +x run_tests.sh
         ./run_tests.sh

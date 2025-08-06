@@ -3,6 +3,9 @@
 [![Build and Release](https://github.com/jedarden-org/whofi/actions/workflows/build-and-release.yaml/badge.svg)](https://github.com/jedarden-org/whofi/actions/workflows/build-and-release.yaml)
 [![CI/CD Pipeline](https://github.com/jedarden-org/whofi/actions/workflows/ci-cd.yaml/badge.svg)](https://github.com/jedarden-org/whofi/actions/workflows/ci-cd.yaml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![ESP-IDF](https://img.shields.io/badge/ESP--IDF-v5.1.2-blue)](https://github.com/espressif/esp-idf)
+[![Node.js](https://img.shields.io/badge/Node.js-v18-green)](https://nodejs.org/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-blue)](https://www.docker.com/)
 
 A comprehensive ESP32-based WiFi Channel State Information (CSI) positioning system for accurate indoor location tracking and smart home automation.
 
