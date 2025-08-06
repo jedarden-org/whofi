@@ -12,7 +12,7 @@ on:
 jobs:
   compile_sketch:
     name: build ${{ matrix.board.name }}
-    runs-on: ubuntu-latest
+    runs-on: jedarden-org-apexalgo-iad-runners
     strategy:
       fail-fast: false
       matrix:
@@ -253,7 +253,7 @@ jobs:
 
   post_compile_steps:
     name: Create Release
-    runs-on: ubuntu-latest
+    runs-on: jedarden-org-apexalgo-iad-runners
     needs: [compile_sketch]
     if: ${{ github.event_name == 'workflow_dispatch' }}
     steps: 

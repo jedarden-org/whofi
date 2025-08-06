@@ -9,7 +9,7 @@ on:
 jobs:
   # ESP32 Firmware Build and Test
   firmware-test:
-    runs-on: [self-hosted, kubernetes, whofi]
+    runs-on: jedarden-org-apexalgo-iad-runners
     container:
       image: espressif/idf:latest
     steps:
@@ -29,7 +29,7 @@ jobs:
 
   # Docker Server Build and Test
   server-test:
-    runs-on: [self-hosted, kubernetes, whofi]
+    runs-on: jedarden-org-apexalgo-iad-runners
     steps:
     - uses: actions/checkout@v3
     
@@ -59,7 +59,7 @@ jobs:
   # Build Docker Images
   docker-build:
     needs: [firmware-test, server-test]
-    runs-on: [self-hosted, kubernetes, whofi]
+    runs-on: jedarden-org-apexalgo-iad-runners
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
     - uses: actions/checkout@v3
@@ -88,7 +88,7 @@ jobs:
   # Deploy to Kubernetes (Optional)
   deploy:
     needs: docker-build
-    runs-on: [self-hosted, kubernetes, whofi]
+    runs-on: jedarden-org-apexalgo-iad-runners
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment: production
     steps:
@@ -112,7 +112,7 @@ jobs:
 
   # Security Scanning
   security-scan:
-    runs-on: [self-hosted, kubernetes, whofi]
+    runs-on: jedarden-org-apexalgo-iad-runners
     steps:
     - uses: actions/checkout@v3
     
