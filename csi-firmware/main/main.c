@@ -199,10 +199,10 @@ static void app_main_task(void *pvParameters)
             last_stats_time = current_time;
             
             ESP_LOGI(TAG, "=== System Status ===");
-            ESP_LOGI(TAG, "Loop cycles: %u, CSI data processed: %u", loop_counter, csi_data_count);
-            ESP_LOGI(TAG, "MQTT publishes: %u (errors: %u)", mqtt_publish_count, mqtt_publish_errors);
-            ESP_LOGI(TAG, "Free heap: %u bytes", esp_get_free_heap_size());
-            ESP_LOGI(TAG, "Min free heap: %u bytes", esp_get_minimum_free_heap_size());
+            ESP_LOGI(TAG, "Loop cycles: %" PRIu32 ", CSI data processed: %" PRIu32, loop_counter, csi_data_count);
+            ESP_LOGI(TAG, "MQTT publishes: %" PRIu32 " (errors: %" PRIu32 ")", mqtt_publish_count, mqtt_publish_errors);
+            ESP_LOGI(TAG, "Free heap: %" PRIu32 " bytes", esp_get_free_heap_size());
+            ESP_LOGI(TAG, "Min free heap: %" PRIu32 " bytes", esp_get_minimum_free_heap_size());
             
             // NTP sync status
             if (ntp_sync_is_synchronized()) {
