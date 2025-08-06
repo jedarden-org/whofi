@@ -16,7 +16,7 @@ env:
 jobs:
   # Build ESP32 Firmware
   build-firmware:
-    runs-on: [self-hosted, kubernetes, jedarden-org]
+    runs-on: [self-hosted, linux, x64, apexalgo-iad, kubernetes, jedarden-org]
     container:
       image: espressif/idf:v5.1.2
     steps:
@@ -58,7 +58,7 @@ jobs:
 
   # Build Docker Images
   build-docker:
-    runs-on: [self-hosted, kubernetes, jedarden-org]
+    runs-on: [self-hosted, linux, x64, apexalgo-iad, kubernetes, jedarden-org]
     permissions:
       contents: read
       packages: write
@@ -111,7 +111,7 @@ jobs:
   release:
     if: startsWith(github.ref, 'refs/tags/')
     needs: [build-firmware, build-docker]
-    runs-on: [self-hosted, kubernetes, jedarden-org]
+    runs-on: [self-hosted, linux, x64, apexalgo-iad, kubernetes, jedarden-org]
     permissions:
       contents: write
       packages: write
@@ -173,7 +173,7 @@ jobs:
 
   # Build Documentation
   build-docs:
-    runs-on: [self-hosted, kubernetes, jedarden-org]
+    runs-on: [self-hosted, linux, x64, apexalgo-iad, kubernetes, jedarden-org]
     steps:
     - uses: actions/checkout@v4
     
