@@ -92,8 +92,9 @@ static void app_main_task(void *pvParameters)
     if (config.ntp.enabled) {
         ntp_config_t ntp_config = {
             .enabled = config.ntp.enabled,
-            .sync_interval = config.ntp.sync_interval * 60,  // Convert minutes to seconds
-            .timezone = "UTC"  // Default timezone
+            .sync_interval = config.ntp.sync_interval,
+            .timezone_offset = config.ntp.timezone_offset,
+            .timeout = 30  // 30 second timeout
         };
         strncpy(ntp_config.server1, config.ntp.server1, sizeof(ntp_config.server1) - 1);
         strncpy(ntp_config.server2, config.ntp.server2, sizeof(ntp_config.server2) - 1);

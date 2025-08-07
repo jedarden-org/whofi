@@ -25,7 +25,7 @@ typedef struct {
     bool ap_mode;           ///< Access Point mode enabled
     char ap_ssid[32];       ///< AP SSID
     char ap_password[64];   ///< AP password
-} wifi_config_t;
+} app_wifi_config_t;
 
 /**
  * @brief CSI collector configuration structure
@@ -96,7 +96,7 @@ typedef struct {
 typedef struct {
     char device_name[32];           ///< Device name/identifier
     char firmware_version[16];      ///< Firmware version string
-    wifi_config_t wifi;             ///< Wi-Fi configuration
+    app_wifi_config_t wifi;             ///< Wi-Fi configuration
     app_csi_config_t csi;               ///< CSI collector configuration
     app_web_server_config_t web_server; ///< Web server configuration
     app_mqtt_config_t mqtt;             ///< MQTT client configuration
