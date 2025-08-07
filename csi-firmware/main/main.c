@@ -36,8 +36,6 @@ static const char *TAG = "MAIN";
  */
 static void app_main_task(void *pvParameters)
 {
-    ESP_LOGI(TAG, "Starting CSI Positioning System v%s", PROJECT_VER);
-    
     // Initialize system components
     if (system_init() != ESP_OK) {
         ESP_LOGE(TAG, "System initialization failed");
@@ -51,6 +49,8 @@ static void app_main_task(void *pvParameters)
         ESP_LOGW(TAG, "Failed to load config, using defaults");
         app_config_set_defaults(&config);
     }
+    
+    ESP_LOGI(TAG, "Starting CSI Positioning System v%s", config.firmware_version);
     
     // Start web configuration server
     if (web_server_start((const web_server_config_t *)&config.web_server) != ESP_OK) {
