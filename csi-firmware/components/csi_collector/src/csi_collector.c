@@ -480,9 +480,9 @@ static esp_err_t process_csi_data(const wifi_csi_info_t *raw_data, csi_data_t *p
     // Copy basic information
     processed_data->timestamp = esp_timer_get_time();
     memcpy(processed_data->mac, raw_data->mac, 6);
-    processed_data->rssi = raw_data->rssi;
-    processed_data->channel = raw_data->channel;
-    processed_data->secondary_channel = raw_data->secondary_channel;
+    processed_data->rssi = raw_data->rx_ctrl.rssi;
+    processed_data->channel = raw_data->rx_ctrl.channel;
+    processed_data->secondary_channel = raw_data->rx_ctrl.secondary_channel;
     processed_data->len = raw_data->len;
     processed_data->valid = true;
 
