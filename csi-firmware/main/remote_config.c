@@ -6,6 +6,7 @@
 #include <string.h>
 #include <esp_log.h>
 #include <esp_err.h>
+#include <esp_timer.h>
 #include <nvs_flash.h>
 #include <cJSON.h>
 #include "app_config.h"
@@ -15,6 +16,9 @@
 #include "ntp_sync.h"
 
 static const char *TAG = "remote_config";
+
+// Forward declaration
+static void publish_detailed_status(void);
 
 /**
  * @brief Handle CSI configuration update
@@ -59,33 +63,37 @@ static esp_err_t handle_csi_config(cJSON *config)
  */
 static esp_err_t handle_mqtt_config(cJSON *config)
 {
-    // Get current MQTT config
-    app_config_t *app_cfg = app_config_get();
-    mqtt_config_t *mqtt_cfg = &app_cfg->mqtt;
+    // Load current configuration
+    app_config_t app_cfg;
+    esp_err_t err = app_config_load(&app_cfg);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to load config: %s", esp_err_to_name(err));
+        return err;
+    }
     
     // Update MQTT settings
     cJSON *item = cJSON_GetObjectItem(config, "broker_url");
     if (item && cJSON_IsString(item)) {
-        strncpy(mqtt_cfg->broker_url, item->valuestring, sizeof(mqtt_cfg->broker_url) - 1);
+        strncpy(app_cfg.mqtt.broker_url, item->valuestring, sizeof(app_cfg.mqtt.broker_url) - 1);
     }
     
     item = cJSON_GetObjectItem(config, "port");
     if (item && cJSON_IsNumber(item)) {
-        mqtt_cfg->port = item->valueint;
+        app_cfg.mqtt.port = item->valueint;
     }
     
     item = cJSON_GetObjectItem(config, "topic_prefix");
     if (item && cJSON_IsString(item)) {
-        strncpy(mqtt_cfg->topic_prefix, item->valuestring, sizeof(mqtt_cfg->topic_prefix) - 1);
+        strncpy(app_cfg.mqtt.topic_prefix, item->valuestring, sizeof(app_cfg.mqtt.topic_prefix) - 1);
     }
     
     // Save configuration
-    esp_err_t err = app_config_save();
+    err = app_config_save(&app_cfg);
     if (err == ESP_OK) {
         // Restart MQTT client with new settings
         mqtt_client_stop();
         vTaskDelay(pdMS_TO_TICKS(1000));
-        mqtt_client_init(mqtt_cfg);
+        mqtt_client_init(&app_cfg.mqtt);
         mqtt_client_start();
     }
     
@@ -97,31 +105,24 @@ static esp_err_t handle_mqtt_config(cJSON *config)
  */
 static esp_err_t handle_node_settings(cJSON *config)
 {
-    app_config_t *app_cfg = app_config_get();
+    // Load current configuration
+    app_config_t app_cfg;
+    esp_err_t err = app_config_load(&app_cfg);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to load config: %s", esp_err_to_name(err));
+        return err;
+    }
+    
     bool restart_required = false;
     
-    // Update node position
-    cJSON *position = cJSON_GetObjectItem(config, "position");
-    if (position) {
-        cJSON *x = cJSON_GetObjectItem(position, "x");
-        cJSON *y = cJSON_GetObjectItem(position, "y");
-        cJSON *z = cJSON_GetObjectItem(position, "z");
-        
-        if (x && cJSON_IsNumber(x)) {
-            app_cfg->node_position_x = x->valuedouble;
-        }
-        if (y && cJSON_IsNumber(y)) {
-            app_cfg->node_position_y = y->valuedouble;
-        }
-        if (z && cJSON_IsNumber(z)) {
-            app_cfg->node_position_z = z->valuedouble;
-        }
-    }
+    // Note: Position fields don't exist in app_config_t structure
+    // If needed, they should be added to the structure definition
+    // For now, we'll skip position updates
     
     // Update node name
     cJSON *name = cJSON_GetObjectItem(config, "node_name");
     if (name && cJSON_IsString(name)) {
-        strncpy(app_cfg->device_name, name->valuestring, sizeof(app_cfg->device_name) - 1);
+        strncpy(app_cfg.device_name, name->valuestring, sizeof(app_cfg.device_name) - 1);
     }
     
     // Update WiFi settings (requires restart)
@@ -131,17 +132,17 @@ static esp_err_t handle_node_settings(cJSON *config)
         cJSON *password = cJSON_GetObjectItem(wifi, "password");
         
         if (ssid && cJSON_IsString(ssid)) {
-            strncpy(app_cfg->wifi_ssid, ssid->valuestring, sizeof(app_cfg->wifi_ssid) - 1);
+            strncpy(app_cfg.wifi.ssid, ssid->valuestring, sizeof(app_cfg.wifi.ssid) - 1);
             restart_required = true;
         }
         if (password && cJSON_IsString(password)) {
-            strncpy(app_cfg->wifi_password, password->valuestring, sizeof(app_cfg->wifi_password) - 1);
+            strncpy(app_cfg.wifi.password, password->valuestring, sizeof(app_cfg.wifi.password) - 1);
             restart_required = true;
         }
     }
     
     // Save configuration
-    esp_err_t err = app_config_save();
+    err = app_config_save(&app_cfg);
     
     if (err == ESP_OK && restart_required) {
         ESP_LOGW(TAG, "WiFi settings changed, restart required in 5 seconds");
@@ -190,20 +191,24 @@ esp_err_t remote_config_update_handler(const cJSON *config)
         }
     }
     
-    // Send acknowledgment
-    char ack_topic[128];
-    snprintf(ack_topic, sizeof(ack_topic), "devices/%s/config/ack", app_config_get()->device_id);
-    
-    cJSON *ack = cJSON_CreateObject();
-    cJSON_AddStringToObject(ack, "status", err == ESP_OK ? "success" : "failed");
-    cJSON_AddNumberToObject(ack, "timestamp", (double)esp_timer_get_time() / 1000000.0);
-    
-    char *ack_str = cJSON_PrintUnformatted(ack);
-    if (ack_str) {
-        mqtt_client_publish(ack_topic, ack_str, strlen(ack_str), 1, false);
-        free(ack_str);
+    // Load config to get device name for ack topic
+    app_config_t app_cfg;
+    if (app_config_load(&app_cfg) == ESP_OK) {
+        // Send acknowledgment
+        char ack_topic[128];
+        snprintf(ack_topic, sizeof(ack_topic), "devices/%s/config/ack", app_cfg.device_name);
+        
+        cJSON *ack = cJSON_CreateObject();
+        cJSON_AddStringToObject(ack, "status", err == ESP_OK ? "success" : "failed");
+        cJSON_AddNumberToObject(ack, "timestamp", (double)esp_timer_get_time() / 1000000.0);
+        
+        char *ack_str = cJSON_PrintUnformatted(ack);
+        if (ack_str) {
+            mqtt_client_publish(ack_topic, ack_str, strlen(ack_str), 1, false);
+            free(ack_str);
+        }
+        cJSON_Delete(ack);
     }
-    cJSON_Delete(ack);
     
     return err;
 }
@@ -263,11 +268,16 @@ esp_err_t remote_command_handler(const cJSON *params)
  */
 static void publish_detailed_status(void)
 {
-    app_config_t *cfg = app_config_get();
+    // Load current configuration
+    app_config_t cfg;
+    if (app_config_load(&cfg) != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to load configuration for status");
+        return;
+    }
     
     cJSON *status = cJSON_CreateObject();
-    cJSON_AddStringToObject(status, "device_id", cfg->device_id);
-    cJSON_AddStringToObject(status, "version", cfg->version);
+    cJSON_AddStringToObject(status, "device_name", cfg.device_name);
+    cJSON_AddStringToObject(status, "version", cfg.firmware_version);
     cJSON_AddNumberToObject(status, "uptime", esp_timer_get_time() / 1000000);
     cJSON_AddNumberToObject(status, "free_heap", esp_get_free_heap_size());
     
@@ -283,16 +293,12 @@ static void publish_detailed_status(void)
     }
     cJSON_AddItemToObject(status, "csi", csi_status);
     
-    // Add node position
-    cJSON *position = cJSON_CreateObject();
-    cJSON_AddNumberToObject(position, "x", cfg->node_position_x);
-    cJSON_AddNumberToObject(position, "y", cfg->node_position_y);
-    cJSON_AddNumberToObject(position, "z", cfg->node_position_z);
-    cJSON_AddItemToObject(status, "position", position);
+    // Note: Position fields don't exist in app_config_t structure
+    // If needed, they should be added to the structure definition
     
     // Publish status
     char topic[128];
-    snprintf(topic, sizeof(topic), "devices/%s/status/detailed", cfg->device_id);
+    snprintf(topic, sizeof(topic), "devices/%s/status/detailed", cfg.device_name);
     
     char *status_str = cJSON_PrintUnformatted(status);
     if (status_str) {
