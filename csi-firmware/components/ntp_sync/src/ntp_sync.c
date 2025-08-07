@@ -12,6 +12,7 @@
 #include <time.h>
 #include <sys/time.h>
 #include <math.h>
+#include <inttypes.h>
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -470,7 +471,7 @@ static void sntp_sync_time_callback(struct timeval *tv)
         return;
     }
 
-    ESP_LOGI(TAG, "Time synchronized via SNTP: %ld.%06ld", tv->tv_sec, tv->tv_usec);
+    ESP_LOGI(TAG, "Time synchronized via SNTP: %lld.%06ld", (long long)tv->tv_sec, tv->tv_usec);
 
     xSemaphoreTake(s_ntp_state.mutex, portMAX_DELAY);
     

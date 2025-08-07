@@ -33,6 +33,11 @@
 #include <nvs_flash.h>
 #include <nvs.h>
 
+// Define MIN macro if not already defined
+#ifndef MIN
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#endif
+
 static const char *TAG = "ota_updater";
 
 // Internal structures and state
@@ -71,8 +76,8 @@ typedef struct {
 static ota_context_t s_ota_ctx = {0};
 
 // Forward declarations
-static esp_err_t ota_check_task(void *param);
-static esp_err_t ota_update_task(void *param);
+static void ota_check_task(void *param);
+static void ota_update_task(void *param);
 static esp_err_t ota_download_and_install(const char *url);
 static esp_err_t ota_verify_firmware(const esp_partition_t *partition);
 static esp_err_t ota_check_version(const char *url, char *available_version, size_t version_len);
@@ -119,7 +124,7 @@ esp_err_t ota_updater_init(const ota_config_t *config)
     }
     
     // Get current firmware version
-    const esp_app_desc_t *app_desc = esp_ota_get_app_description();
+    const esp_app_desc_t *app_desc = esp_app_get_description();
     if (app_desc) {
         strlcpy(s_ota_ctx.firmware_version, app_desc->version, 
                 sizeof(s_ota_ctx.firmware_version));
@@ -133,7 +138,7 @@ esp_err_t ota_updater_init(const ota_config_t *config)
     if (running_partition) {
         mbedtls_sha256_context sha_ctx;
         mbedtls_sha256_init(&sha_ctx);
-        mbedtls_sha256_starts_ret(&sha_ctx, 0);
+        mbedtls_sha256_starts(&sha_ctx, 0);
         
         uint8_t buffer[1024];
         size_t offset = 0;
@@ -143,11 +148,11 @@ esp_err_t ota_updater_init(const ota_config_t *config)
             esp_err_t ret = esp_partition_read(running_partition, offset, buffer, read_size);
             if (ret != ESP_OK) break;
             
-            mbedtls_sha256_update_ret(&sha_ctx, buffer, read_size);
+            mbedtls_sha256_update(&sha_ctx, buffer, read_size);
             offset += read_size;
         }
         
-        mbedtls_sha256_finish_ret(&sha_ctx, s_ota_ctx.firmware_hash);
+        mbedtls_sha256_finish(&sha_ctx, s_ota_ctx.firmware_hash);
         mbedtls_sha256_free(&sha_ctx);
     }
     
@@ -538,7 +543,7 @@ esp_err_t ota_updater_mark_valid(void)
 
 // Internal implementation functions
 
-static esp_err_t ota_check_task(void *param)
+static void ota_check_task(void *param)
 {
     while (s_ota_ctx.initialized) {
         vTaskDelay(pdMS_TO_TICKS(60000)); // Check every minute for manual requests
@@ -546,10 +551,9 @@ static esp_err_t ota_check_task(void *param)
     }
     
     vTaskDelete(NULL);
-    return ESP_OK;
 }
 
-static esp_err_t ota_update_task(void *param)
+static void ota_update_task(void *param)
 {
     const char *url = (const char*)param;
     esp_err_t ret = ota_download_and_install(url);
@@ -581,7 +585,6 @@ static esp_err_t ota_update_task(void *param)
     }
     
     vTaskDelete(NULL);
-    return ret;
 }
 
 static esp_err_t ota_download_and_install(const char *url)
@@ -651,7 +654,7 @@ static esp_err_t ota_download_and_install(const char *url)
     ota_report_progress(OTA_STATUS_VERIFYING, 100);
     
     if (s_ota_ctx.config.verify_signature) {
-        const esp_partition_t *update_partition = esp_https_ota_get_boot_partition();
+        const esp_partition_t *update_partition = esp_ota_get_next_update_partition(NULL);
         ret = ota_verify_firmware(update_partition);
         if (ret != ESP_OK) {
             ESP_LOGE(TAG, "Firmware verification failed: %s", esp_err_to_name(ret));
@@ -797,7 +800,7 @@ static void ota_report_progress(ota_status_t status, uint8_t progress)
         
         char *json_string = cJSON_Print(progress_json);
         if (json_string) {
-            mqtt_client_publish(OTA_MQTT_TOPIC_PROGRESS, json_string, 0, 0);
+            mqtt_client_publish(OTA_MQTT_TOPIC_PROGRESS, json_string, strlen(json_string), 0, 0);
             free(json_string);
         }
         
@@ -877,7 +880,7 @@ static esp_err_t ota_publish_status(const char *status_msg, const char *details)
     esp_err_t ret = ESP_ERR_NO_MEM;
     
     if (json_string) {
-        ret = mqtt_client_publish(OTA_MQTT_TOPIC_STATUS, json_string, 0, 1); // Retain message
+        ret = mqtt_client_publish(OTA_MQTT_TOPIC_STATUS, json_string, strlen(json_string), 0, 1); // Retain message
         free(json_string);
     }
     
