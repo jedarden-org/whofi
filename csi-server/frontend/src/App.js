@@ -24,7 +24,7 @@ import {
   Menu as MenuIcon,
   Dashboard as DashboardIcon,
   LocationOn as LocationIcon,
-  Heatmap as HeatmapIcon,
+  GridOn as HeatmapIcon,
   Timeline as SignalIcon,
   Tune as CalibrateIcon,
   Sensors as SensorsIcon,
