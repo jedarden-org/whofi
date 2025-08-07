@@ -52,7 +52,7 @@ esp_err_t ota_verify_partition_integrity(const esp_partition_t *partition)
     // Calculate SHA256 hash of the partition
     mbedtls_sha256_context sha_ctx;
     mbedtls_sha256_init(&sha_ctx);
-    mbedtls_sha256_starts_ret(&sha_ctx, 0);
+    mbedtls_sha256_starts(&sha_ctx, 0);
     
     uint8_t buffer[4096];
     size_t offset = 0;
@@ -70,12 +70,12 @@ esp_err_t ota_verify_partition_integrity(const esp_partition_t *partition)
             return ret;
         }
         
-        mbedtls_sha256_update_ret(&sha_ctx, buffer, read_size);
+        mbedtls_sha256_update(&sha_ctx, buffer, read_size);
         offset += read_size;
     }
     
     uint8_t hash[32];
-    mbedtls_sha256_finish_ret(&sha_ctx, hash);
+    mbedtls_sha256_finish(&sha_ctx, hash);
     mbedtls_sha256_free(&sha_ctx);
     
     // Log hash for verification
@@ -113,7 +113,7 @@ esp_err_t ota_verify_firmware_signature(const esp_partition_t *partition,
     uint8_t hash[32];
     mbedtls_sha256_context sha_ctx;
     mbedtls_sha256_init(&sha_ctx);
-    mbedtls_sha256_starts_ret(&sha_ctx, 0);
+    mbedtls_sha256_starts(&sha_ctx, 0);
     
     uint8_t buffer[4096];
     size_t offset = 0;
@@ -131,11 +131,11 @@ esp_err_t ota_verify_firmware_signature(const esp_partition_t *partition,
             return esp_ret;
         }
         
-        mbedtls_sha256_update_ret(&sha_ctx, buffer, read_size);
+        mbedtls_sha256_update(&sha_ctx, buffer, read_size);
         offset += read_size;
     }
     
-    mbedtls_sha256_finish_ret(&sha_ctx, hash);
+    mbedtls_sha256_finish(&sha_ctx, hash);
     mbedtls_sha256_free(&sha_ctx);
     
     // Verify signature

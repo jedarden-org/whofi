@@ -520,7 +520,9 @@ static esp_err_t ntp_force_sync_internal(void)
 {
     ESP_LOGI(TAG, "Requesting immediate SNTP sync");
     
-    esp_sntp_request(NULL);
+    // Force a sync by restarting SNTP
+    esp_sntp_stop();
+    esp_sntp_init();
     
     // Wait for synchronization with timeout
     TickType_t start_time = xTaskGetTickCount();
