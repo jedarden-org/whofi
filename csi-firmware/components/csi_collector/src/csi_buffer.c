@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <esp_log.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/semphr.h>
 
 static const char *TAG = "CSI_BUFFER";
 

@@ -16,4 +16,5 @@ idf_component_register(
         "json"
     PRIV_REQUIRES
         "unity"
+        "esp_timer"
 )
