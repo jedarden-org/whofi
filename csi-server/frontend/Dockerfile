@@ -1,5 +1,6 @@
 # Multi-stage build
-FROM node:18-alpine AS builder
+# Use public ECR gallery to avoid Docker Hub rate limits
+FROM public.ecr.aws/docker/library/node:18-alpine AS builder
 
 WORKDIR /app
 
@@ -16,7 +17,8 @@ COPY frontend/ .
 RUN npm run build
 
 # Production stage
-FROM nginx:alpine
+# Use public ECR gallery to avoid Docker Hub rate limits
+FROM public.ecr.aws/nginx/nginx:alpine
 
 # Copy built application
 COPY --from=builder /app/build /usr/share/nginx/html

@@ -34,6 +34,12 @@ jobs:
         . ~/esp/esp-idf/export.sh
         idf.py build
     
+    - name: Check Firmware Size Compatibility
+      working-directory: csi-firmware
+      run: |
+        chmod +x check_firmware_size.sh
+        ./check_firmware_size.sh
+    
     - name: Run Firmware Tests
       working-directory: csi-firmware
       run: |

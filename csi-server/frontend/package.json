@@ -1,6 +1,6 @@
 {
   "name": "csi-frontend",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "CSI Positioning System Frontend",
   "main": "src/index.js",
   "homepage": "/",
