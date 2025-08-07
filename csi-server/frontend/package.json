@@ -1,6 +1,6 @@
 {
   "name": "csi-frontend",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "CSI Positioning System Frontend",
   "main": "src/index.js",
   "homepage": "/",
@@ -35,7 +35,7 @@
     "react-grid-layout": "^1.4.4",
     "@react-three/fiber": "^8.15.11",
     "@react-three/drei": "^9.88.13",
-    "three": "^0.158.0"
+    "three": "^0.160.0"
   },
   "devDependencies": {
     "react-scripts": "5.0.1",
