@@ -55,7 +55,8 @@ static esp_err_t api_status_handler(httpd_req_t *req);
 static esp_err_t api_config_handler(httpd_req_t *req);
 static esp_err_t api_csi_data_handler(httpd_req_t *req);
 static esp_err_t api_stats_handler(httpd_req_t *req);
-static esp_err_t websocket_handler(httpd_req_t *req);
+// WebSocket not supported in ESP-IDF v5.1.2
+// static esp_err_t websocket_handler(httpd_req_t *req);
 static bool authenticate_request(httpd_req_t *req);
 static void update_stats(size_t bytes_sent, size_t bytes_received);
 
@@ -146,14 +147,15 @@ esp_err_t web_server_start(const web_server_config_t *config)
             .method = HTTP_GET,
             .handler = api_stats_handler,
             .user_ctx = NULL
-        },
-        {
+        }
+        // WebSocket not supported in ESP-IDF v5.1.2
+        /*{
             .uri = "/ws",
             .method = HTTP_GET,
             .handler = websocket_handler,
             .user_ctx = NULL,
             .is_websocket = true
-        }
+        }*/
     };
 
     for (int i = 0; i < sizeof(uri_handlers) / sizeof(httpd_uri_t); i++) {
@@ -587,7 +589,8 @@ static esp_err_t api_stats_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
-static esp_err_t websocket_handler(httpd_req_t *req)
+// WebSocket not supported in ESP-IDF v5.1.2
+/*static esp_err_t websocket_handler(httpd_req_t *req)
 {
     if (req->method == HTTP_GET) {
         ESP_LOGI(TAG, "WebSocket handshake");
@@ -639,7 +642,7 @@ static esp_err_t websocket_handler(httpd_req_t *req)
     }
     
     return ESP_OK;
-}
+}*/
 
 static bool authenticate_request(httpd_req_t *req)
 {
