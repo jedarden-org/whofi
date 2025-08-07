@@ -4,8 +4,8 @@
 echo "🔍 Checking firmware size compatibility..."
 
 # Get the binary size
-if [ -f "build/csi_collector.bin" ]; then
-    FIRMWARE_SIZE=$(stat -c%s "build/csi_collector.bin" 2>/dev/null || stat -f%z "build/csi_collector.bin" 2>/dev/null)
+if [ -f "build/csi_positioning_firmware.bin" ]; then
+    FIRMWARE_SIZE=$(stat -c%s "build/csi_positioning_firmware.bin" 2>/dev/null || stat -f%z "build/csi_positioning_firmware.bin" 2>/dev/null)
     echo "📦 Firmware size: $(($FIRMWARE_SIZE / 1024)) KB"
     
     # Check for 1MB flash compatibility (896KB max for app partition)
