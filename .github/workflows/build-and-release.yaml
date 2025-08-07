@@ -55,7 +55,7 @@ jobs:
         mkdir -p release
         cp build/bootloader/bootloader.bin release/
         cp build/partition_table/partition-table.bin release/
-        cp build/csi_collector.bin release/
+        cp build/csi_positioning_firmware.bin release/
         cp build/flash_args release/
         echo "WhōFi ESP32 Firmware" > release/README.txt
         echo "Flash with: esptool.py write_flash @flash_args" >> release/README.txt
@@ -106,7 +106,7 @@ jobs:
           type=ref,event=pr
           type=semver,pattern={{version}}
           type=semver,pattern={{major}}.{{minor}}
-          type=sha,prefix={{branch}}-
+          type=sha
     
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
