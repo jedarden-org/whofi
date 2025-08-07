@@ -53,7 +53,17 @@ static void app_main_task(void *pvParameters)
     ESP_LOGI(TAG, "Starting CSI Positioning System v%s", config.firmware_version);
     
     // Start web configuration server
-    if (web_server_start((const web_server_config_t *)&config.web_server) != ESP_OK) {
+    web_server_config_t web_config = {
+        .enabled = config.web_server.enabled,
+        .port = config.web_server.port,
+        .auth_enabled = config.web_server.auth_enabled,
+        .max_sessions = 10,  // Default value
+        .session_timeout = 30  // Default value
+    };
+    strncpy(web_config.username, config.web_server.username, sizeof(web_config.username) - 1);
+    strncpy(web_config.password, config.web_server.password, sizeof(web_config.password) - 1);
+    
+    if (web_server_start(&web_config) != ESP_OK) {
         ESP_LOGE(TAG, "Failed to start web server");
     }
     
@@ -80,7 +90,16 @@ static void app_main_task(void *pvParameters)
     
     // Start NTP synchronization first (required for accurate timestamps)
     if (config.ntp.enabled) {
-        if (ntp_sync_init((const ntp_config_t *)&config.ntp) != ESP_OK) {
+        ntp_config_t ntp_config = {
+            .enabled = config.ntp.enabled,
+            .sync_interval = config.ntp.sync_interval * 60,  // Convert minutes to seconds
+            .timezone = "UTC"  // Default timezone
+        };
+        strncpy(ntp_config.server1, config.ntp.server1, sizeof(ntp_config.server1) - 1);
+        strncpy(ntp_config.server2, config.ntp.server2, sizeof(ntp_config.server2) - 1);
+        strncpy(ntp_config.server3, config.ntp.server3, sizeof(ntp_config.server3) - 1);
+        
+        if (ntp_sync_init(&ntp_config) != ESP_OK) {
             ESP_LOGE(TAG, "Failed to initialize NTP sync");
         } else {
             ESP_LOGI(TAG, "NTP sync initialized successfully");
@@ -111,7 +130,21 @@ static void app_main_task(void *pvParameters)
     
     // Start MQTT client if configured
     if (config.mqtt.enabled) {
-        if (mqtt_client_init((const mqtt_config_t *)&config.mqtt) != ESP_OK) {
+        mqtt_config_t mqtt_config = {
+            .enabled = config.mqtt.enabled,
+            .port = config.mqtt.port,
+            .ssl_enabled = config.mqtt.ssl_enabled,
+            .keepalive = config.mqtt.keepalive,
+            .qos = 1,  // Default QoS
+            .retain = false  // Default retain
+        };
+        strncpy(mqtt_config.broker_url, config.mqtt.broker_url, sizeof(mqtt_config.broker_url) - 1);
+        strncpy(mqtt_config.username, config.mqtt.username, sizeof(mqtt_config.username) - 1);
+        strncpy(mqtt_config.password, config.mqtt.password, sizeof(mqtt_config.password) - 1);
+        strncpy(mqtt_config.client_id, config.mqtt.client_id, sizeof(mqtt_config.client_id) - 1);
+        strncpy(mqtt_config.topic_prefix, config.mqtt.topic_prefix, sizeof(mqtt_config.topic_prefix) - 1);
+        
+        if (mqtt_client_init(&mqtt_config) != ESP_OK) {
             ESP_LOGE(TAG, "Failed to initialize MQTT client");
         } else if (mqtt_client_start() != ESP_OK) {
             ESP_LOGE(TAG, "Failed to start MQTT client");
@@ -140,7 +173,16 @@ static void app_main_task(void *pvParameters)
     }
     
     // Initialize OTA updater
-    if (ota_updater_init((const ota_config_t *)&config.ota) != ESP_OK) {
+    ota_config_t ota_config = {
+        .enabled = config.ota.enabled,
+        .auto_check = config.ota.auto_update,
+        .check_interval = config.ota.check_interval * 60,  // Convert minutes to seconds
+        .server_port = 443,  // Default HTTPS port
+        .use_secure_connection = true  // Default to secure
+    };
+    strncpy(ota_config.server_url, config.ota.update_url, sizeof(ota_config.server_url) - 1);
+    
+    if (ota_updater_init(&ota_config) != ESP_OK) {
         ESP_LOGE(TAG, "Failed to initialize OTA updater");
     }
     

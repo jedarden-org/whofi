@@ -39,7 +39,7 @@ typedef struct {
     bool enable_rssi;       ///< Include RSSI data
     bool enable_phase;      ///< Include phase information
     bool enable_amplitude;  ///< Include amplitude information
-} csi_config_t;
+} app_csi_config_t;
 
 /**
  * @brief Web server configuration structure
@@ -50,7 +50,7 @@ typedef struct {
     bool auth_enabled;      ///< Authentication enabled
     char username[32];      ///< Admin username
     char password[64];      ///< Admin password
-} web_server_config_t;
+} app_web_server_config_t;
 
 /**
  * @brief MQTT client configuration structure
@@ -65,7 +65,7 @@ typedef struct {
     char topic_prefix[64];  ///< Topic prefix for published data
     bool ssl_enabled;       ///< SSL/TLS enabled
     uint16_t keepalive;     ///< Keepalive interval
-} mqtt_config_t;
+} app_mqtt_config_t;
 
 /**
  * @brief NTP synchronization configuration structure
@@ -77,7 +77,7 @@ typedef struct {
     char server3[64];       ///< Tertiary NTP server
     int16_t timezone_offset; ///< Timezone offset in minutes
     uint16_t sync_interval; ///< Sync interval in minutes
-} ntp_config_t;
+} app_ntp_config_t;
 
 /**
  * @brief OTA update configuration structure
@@ -88,7 +88,7 @@ typedef struct {
     bool auto_update;       ///< Automatic updates enabled
     uint16_t check_interval; ///< Update check interval in minutes
     bool verify_signature;  ///< Verify update signature
-} ota_config_t;
+} app_ota_config_t;
 
 /**
  * @brief Main application configuration structure
@@ -97,11 +97,11 @@ typedef struct {
     char device_name[32];           ///< Device name/identifier
     char firmware_version[16];      ///< Firmware version string
     wifi_config_t wifi;             ///< Wi-Fi configuration
-    csi_config_t csi;               ///< CSI collector configuration
-    web_server_config_t web_server; ///< Web server configuration
-    mqtt_config_t mqtt;             ///< MQTT client configuration
-    ntp_config_t ntp;               ///< NTP synchronization configuration
-    ota_config_t ota;               ///< OTA update configuration
+    app_csi_config_t csi;               ///< CSI collector configuration
+    app_web_server_config_t web_server; ///< Web server configuration
+    app_mqtt_config_t mqtt;             ///< MQTT client configuration
+    app_ntp_config_t ntp;               ///< NTP synchronization configuration
+    app_ota_config_t ota;               ///< OTA update configuration
 } app_config_t;
 
 /**
