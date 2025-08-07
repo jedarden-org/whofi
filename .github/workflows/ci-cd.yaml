@@ -83,29 +83,47 @@ jobs:
     needs: [firmware-test, server-test]
     runs-on: jedarden-org-apexalgo-iad-runners
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      packages: write
+    env:
+      REGISTRY: ghcr.io
     steps:
     - uses: actions/checkout@v3
     
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
     
-    - name: Build Backend Image
-      working-directory: csi-server
-      run: |
-        docker build -t whofi-backend:${{ github.sha }} -f backend/Dockerfile .
-        docker tag whofi-backend:${{ github.sha }} whofi-backend:latest
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     
-    - name: Build Frontend Image
-      working-directory: csi-server
-      run: |
-        docker build -t whofi-frontend:${{ github.sha }} -f frontend/Dockerfile .
-        docker tag whofi-frontend:${{ github.sha }} whofi-frontend:latest
+    - name: Build and Push Backend Image
+      uses: docker/build-push-action@v4
+      with:
+        context: csi-server
+        file: csi-server/backend/Dockerfile
+        push: true
+        tags: |
+          ${{ env.REGISTRY }}/${{ github.repository_owner }}/whofi-backend:${{ github.sha }}
+          ${{ env.REGISTRY }}/${{ github.repository_owner }}/whofi-backend:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
     
-    # Optional: Push to registry
-    # - name: Push to Registry
-    #   run: |
-    #     docker push your-registry/whofi-backend:${{ github.sha }}
-    #     docker push your-registry/whofi-frontend:${{ github.sha }}
+    - name: Build and Push Frontend Image
+      uses: docker/build-push-action@v4
+      with:
+        context: csi-server
+        file: csi-server/frontend/Dockerfile
+        push: true
+        tags: |
+          ${{ env.REGISTRY }}/${{ github.repository_owner }}/whofi-frontend:${{ github.sha }}
+          ${{ env.REGISTRY }}/${{ github.repository_owner }}/whofi-frontend:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
 
   # Deploy to Kubernetes (Optional)
   deploy:
@@ -113,6 +131,8 @@ jobs:
     runs-on: jedarden-org-apexalgo-iad-runners
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment: production
+    env:
+      REGISTRY: ghcr.io
     steps:
     - uses: actions/checkout@v3
     
@@ -120,11 +140,11 @@ jobs:
       run: |
         # Update image tags in Kubernetes manifests
         kubectl set image deployment/whofi-backend \
-          backend=whofi-backend:${{ github.sha }} \
+          backend=${{ env.REGISTRY }}/${{ github.repository_owner }}/whofi-backend:${{ github.sha }} \
           -n whofi-production || echo "Deployment not found"
         
         kubectl set image deployment/whofi-frontend \
-          frontend=whofi-frontend:${{ github.sha }} \
+          frontend=${{ env.REGISTRY }}/${{ github.repository_owner }}/whofi-frontend:${{ github.sha }} \
           -n whofi-production || echo "Deployment not found"
     
     - name: Wait for rollout
