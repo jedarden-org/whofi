@@ -345,7 +345,7 @@ esp_err_t mqtt_client_subscribe(const char *topic, int qos)
 
     ESP_LOGI(TAG, "Subscribing to topic: %s (QoS: %d)", topic, qos);
 
-    int msg_id = esp_mqtt_client_subscribe(s_mqtt_state.client, topic, qos);
+    int msg_id = esp_mqtt_client_subscribe(s_mqtt_state.client, (char *)topic, qos);
     if (msg_id == -1) {
         ESP_LOGE(TAG, "Failed to subscribe to topic: %s", topic);
         return ESP_FAIL;
@@ -548,7 +548,7 @@ static void mqtt_reconnect_task(void *pvParameters)
 
         // Wait before retry
         ESP_LOGI(TAG, "Attempting MQTT reconnection (attempt %d/%d)", 
-                s_mqtt_state.retry_count + 1, MAX_RETRY_ATTEMPTS);
+                (int)(s_mqtt_state.retry_count + 1), (int)MAX_RETRY_ATTEMPTS);
         
         vTaskDelay(pdMS_TO_TICKS(RETRY_DELAY_MS));
 
