@@ -137,7 +137,7 @@ esp_err_t ntp_client_format_time(uint64_t timestamp_us, int16_t timezone_offset,
     
     // Add microseconds
     char us_str[8];
-    snprintf(us_str, sizeof(us_str), ".%06u", microseconds);
+    snprintf(us_str, sizeof(us_str), ".%06" PRIu32, microseconds);
     strncat(buffer, us_str, buffer_size - strlen(buffer) - 1);
 
     return ESP_OK;
@@ -188,7 +188,7 @@ esp_err_t ntp_client_measure_server_delay(const char *server, uint32_t *delay_ms
     TickType_t end_time = xTaskGetTickCount();
     *delay_ms = (end_time - start_time) * portTICK_PERIOD_MS;
     
-    ESP_LOGI(TAG, "Measured delay to %s: %u ms", server, *delay_ms);
+    ESP_LOGI(TAG, "Measured delay to %s: %" PRIu32 " ms", server, *delay_ms);
     return ESP_OK;
 }
 
@@ -225,7 +225,7 @@ esp_err_t ntp_client_get_server_stats(const char *server, ntp_server_stats_t *st
         stats->last_response = time(NULL);
     }
     
-    ESP_LOGI(TAG, "Server %s stats: stratum=%d, delay=%ums, available=%s", 
+    ESP_LOGI(TAG, "Server %s stats: stratum=%d, delay=%" PRIu32 "ms, available=%s", 
              server, stats->stratum, stats->delay_ms, 
              stats->available ? "yes" : "no");
     
@@ -262,7 +262,7 @@ esp_err_t ntp_client_validate_server(const char *server)
     esp_err_t err = ntp_client_measure_server_delay(server, &delay_ms);
     
     if (err == ESP_OK && delay_ms < 5000) {  // Reasonable delay threshold
-        ESP_LOGI(TAG, "Server %s is accessible (delay: %ums)", server, delay_ms);
+        ESP_LOGI(TAG, "Server %s is accessible (delay: %" PRIu32 "ms)", server, delay_ms);
         return ESP_OK;
     } else {
         ESP_LOGW(TAG, "Server %s may not be accessible or has high delay", server);
