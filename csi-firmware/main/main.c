@@ -175,12 +175,13 @@ static void app_main_task(void *pvParameters)
     // Initialize OTA updater
     ota_config_t ota_config = {
         .enabled = config.ota.enabled,
-        .auto_check = config.ota.auto_update,
-        .check_interval = config.ota.check_interval * 60,  // Convert minutes to seconds
-        .server_port = 443,  // Default HTTPS port
-        .use_secure_connection = true  // Default to secure
+        .auto_update = config.ota.auto_update,
+        .check_interval = config.ota.check_interval,
+        .verify_signature = config.ota.verify_signature,
+        .timeout_ms = 30000  // 30 second timeout
     };
-    strncpy(ota_config.server_url, config.ota.update_url, sizeof(ota_config.server_url) - 1);
+    strncpy(ota_config.update_url, config.ota.update_url, sizeof(ota_config.update_url) - 1);
+    ota_config.cert_pem[0] = '\0';  // No certificate for now
     
     if (ota_updater_init(&ota_config) != ESP_OK) {
         ESP_LOGE(TAG, "Failed to initialize OTA updater");
