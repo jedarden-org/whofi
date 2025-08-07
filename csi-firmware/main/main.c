@@ -53,7 +53,7 @@ static void app_main_task(void *pvParameters)
     }
     
     // Start web configuration server
-    if (web_server_start(&config.web_server) != ESP_OK) {
+    if (web_server_start((const web_server_config_t *)&config.web_server) != ESP_OK) {
         ESP_LOGE(TAG, "Failed to start web server");
     }
     
@@ -80,7 +80,7 @@ static void app_main_task(void *pvParameters)
     
     // Start NTP synchronization first (required for accurate timestamps)
     if (config.ntp.enabled) {
-        if (ntp_sync_init(&config.ntp) != ESP_OK) {
+        if (ntp_sync_init((const ntp_config_t *)&config.ntp) != ESP_OK) {
             ESP_LOGE(TAG, "Failed to initialize NTP sync");
         } else {
             ESP_LOGI(TAG, "NTP sync initialized successfully");
@@ -111,7 +111,7 @@ static void app_main_task(void *pvParameters)
     
     // Start MQTT client if configured
     if (config.mqtt.enabled) {
-        if (mqtt_client_init(&config.mqtt) != ESP_OK) {
+        if (mqtt_client_init((const mqtt_config_t *)&config.mqtt) != ESP_OK) {
             ESP_LOGE(TAG, "Failed to initialize MQTT client");
         } else if (mqtt_client_start() != ESP_OK) {
             ESP_LOGE(TAG, "Failed to start MQTT client");
@@ -140,7 +140,7 @@ static void app_main_task(void *pvParameters)
     }
     
     // Initialize OTA updater
-    if (ota_updater_init(&config.ota) != ESP_OK) {
+    if (ota_updater_init((const ota_config_t *)&config.ota) != ESP_OK) {
         ESP_LOGE(TAG, "Failed to initialize OTA updater");
     }
     
