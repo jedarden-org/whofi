@@ -15,4 +15,5 @@ idf_component_register(
         "esp_netif"
     PRIV_REQUIRES
         "unity"
+        "esp_timer"
 )

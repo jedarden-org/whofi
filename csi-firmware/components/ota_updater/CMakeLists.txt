@@ -17,4 +17,7 @@ idf_component_register(
         "nvs_flash"
     PRIV_REQUIRES
         "unity"
+        "app_update"
+        "mbedtls"
+        "mqtt_client"
 )
