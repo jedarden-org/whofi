@@ -59,7 +59,7 @@ services:
       - "8080:8080"  # WebSocket server port
     environment:
       - NODE_ENV=production
-      - API_VERSION=v2.0.0
+      - API_VERSION=v1.1.0
       # MQTT REMOVED - HTTP + WebSocket only
       - INFLUXDB_URL=http://influxdb:8086
       - INFLUXDB_TOKEN=${INFLUXDB_TOKEN:-changeme}
@@ -98,7 +98,7 @@ services:
     environment:
       - REACT_APP_API_URL=http://localhost:3000
       - REACT_APP_WS_URL=ws://localhost:8080
-      - REACT_APP_VERSION=v2.0.0
+      - REACT_APP_VERSION=v1.1.0
     volumes:
       - ./config/nginx/nginx-v2.conf:/etc/nginx/nginx.conf:ro
       - ./config/nginx/ssl:/etc/nginx/ssl:ro

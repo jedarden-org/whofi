@@ -1,4 +1,4 @@
-# ESP32-S3 CSI Firmware Binary - HTTP-Only Configuration v2.0.0
+# ESP32-S3 CSI Firmware Binary - HTTP-Only Configuration v1.1.0
 # 
 # Configuration: Maximum size optimization (270KB target)
 # Architecture: HTTP REST API only
@@ -15,7 +15,7 @@
 # - Alert notifications
 #
 # Flash instructions:
-# esptool.py --chip esp32s3 --port /dev/ttyUSB0 write_flash 0x0 csi-firmware-http-only-v2.0.0.bin
+# esptool.py --chip esp32s3 --port /dev/ttyUSB0 write_flash 0x0 csi-firmware-http-only-v1.1.0.bin
 #
 # Note: This is a placeholder binary file. 
 # Use Docker ESP-IDF build process for actual firmware generation.

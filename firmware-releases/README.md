@@ -1,8 +1,8 @@
-# ESP32-S3 CSI Firmware Releases v2.0.0
+# ESP32-S3 CSI Firmware Releases v1.1.0
 
 ## 🚀 Release Summary
 
-**Version:** v2.0.0  
+**Version:** v1.1.0  
 **Release Date:** 2025-01-16  
 **Architecture:** HTTP + WebSocket (MQTT-free)  
 **Docker Server:** Updated with HTTP/WebSocket support  
@@ -20,7 +20,7 @@
 ## 📦 **Available Firmware Configurations**
 
 ### 1️⃣ **HTTP + WebSocket (320KB) ⭐ RECOMMENDED**
-**File:** `csi-firmware-http-websocket-v2.0.0.bin`
+**File:** `csi-firmware-http-websocket-v1.1.0.bin`
 
 - **Best for:** Real-time positioning systems
 - **Size:** 320KB (45% smaller than MQTT)
@@ -29,7 +29,7 @@
 - **Use case:** Production deployments
 
 ### 2️⃣ **HTTP-Only (270KB)**
-**File:** `csi-firmware-http-only-v2.0.0.bin`
+**File:** `csi-firmware-http-only-v1.1.0.bin`
 
 - **Best for:** Maximum size optimization
 - **Size:** 270KB (53% smaller than MQTT)
@@ -38,7 +38,7 @@
 - **Use case:** Battery-powered sensors
 
 ### 3️⃣ **MQTT Legacy (580KB) ❌ DEPRECATED**
-**File:** `csi-firmware-mqtt-legacy-v2.0.0.bin`
+**File:** `csi-firmware-mqtt-legacy-v1.1.0.bin`
 
 - **Status:** Deprecated, use for migration only
 - **Size:** 580KB (legacy baseline)
@@ -54,23 +54,23 @@
 pip install esptool
 
 # Flash recommended HTTP + WebSocket firmware
-esptool.py --chip esp32s3 --port /dev/ttyUSB0 write_flash 0x0 csi-firmware-http-websocket-v2.0.0.bin
+esptool.py --chip esp32s3 --port /dev/ttyUSB0 write_flash 0x0 csi-firmware-http-websocket-v1.1.0.bin
 
 # Flash HTTP-only (maximum optimization)
-esptool.py --chip esp32s3 --port /dev/ttyUSB0 write_flash 0x0 csi-firmware-http-only-v2.0.0.bin
+esptool.py --chip esp32s3 --port /dev/ttyUSB0 write_flash 0x0 csi-firmware-http-only-v1.1.0.bin
 ```
 
 ---
 
 ## 🐳 **Updated Docker Infrastructure**
 
-### **New Docker Compose v2.0.0**
+### **New Docker Compose v1.1.0**
 - **MQTT broker removed** (mosquitto service eliminated)
 - **HTTP + WebSocket backend** with real-time streaming
 - **Simplified architecture** with fewer dependencies
 - **Enhanced performance** and reduced resource usage
 
-### **Start Docker Server v2.0.0**
+### **Start Docker Server v1.1.0**
 ```bash
 cd csi-server
 docker-compose -f docker-compose-v2.yml up -d
@@ -96,14 +96,14 @@ docker run --rm -v $(pwd):/project -w /project espressif/idf:v5.1.2 bash -c "
   cp sdkconfig.http_websocket sdkconfig
   cp partitions_4mb_ota.csv partitions.csv
   idf.py clean && idf.py build
-  cp build/csi_firmware.bin ../firmware-releases/csi-firmware-http-websocket-v2.0.0.bin"
+  cp build/csi_firmware.bin ../firmware-releases/csi-firmware-http-websocket-v1.1.0.bin"
 
 # Build HTTP-Only (Maximum optimization)  
 docker run --rm -v $(pwd):/project -w /project espressif/idf:v5.1.2 bash -c "
   cp sdkconfig.http_only sdkconfig
   cp partitions_4mb_ota.csv partitions.csv
   idf.py clean && idf.py build
-  cp build/csi_firmware.bin ../firmware-releases/csi-firmware-http-only-v2.0.0.bin"
+  cp build/csi_firmware.bin ../firmware-releases/csi-firmware-http-only-v1.1.0.bin"
 ```
 
 ---
@@ -136,7 +136,7 @@ docker run --rm -v $(pwd):/project -w /project espressif/idf:v5.1.2 bash -c "
 ## 🔍 **Migration from MQTT**
 
 ### **Step-by-Step Migration**
-1. **Update Docker server** to v2.0.0
+1. **Update Docker server** to v1.1.0
 2. **Choose HTTP + WebSocket** for similar real-time capability  
 3. **Remove MQTT broker** configuration
 4. **OTA update devices** with new firmware
@@ -161,7 +161,7 @@ docker run --rm -v $(pwd):/project -w /project espressif/idf:v5.1.2 bash -c "
 ### **2. Flash Firmware**
 ```bash
 # Flash recommended configuration
-esptool.py --chip esp32s3 --port /dev/ttyUSB0 write_flash 0x0 csi-firmware-http-websocket-v2.0.0.bin
+esptool.py --chip esp32s3 --port /dev/ttyUSB0 write_flash 0x0 csi-firmware-http-websocket-v1.1.0.bin
 ```
 
 ### **3. Start Docker Server**
@@ -171,7 +171,7 @@ docker-compose -f docker-compose-v2.yml up -d
 ```
 
 ### **4. Verify Connection**
-- Open `http://localhost:3000/health` (should show v2.0.0)
+- Open `http://localhost:3000/health` (should show v1.1.0)
 - WebSocket should connect to `ws://localhost:8080`
 - InfluxDB available at `http://localhost:8086`
 

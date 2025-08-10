@@ -25,7 +25,7 @@ const compression = require('compression');
 
 require('dotenv').config();
 
-const VERSION = 'v2.0.0';
+const VERSION = 'v1.1.0';
 
 // Configuration
 const CONFIG = {
@@ -291,7 +291,7 @@ class CSIServerV2 {
             // Send welcome message
             this.sendWebSocketMessage(ws, {
                 msg_type: 7, // PONG
-                message: 'Connected to CSI Server v2.0.0',
+                message: 'Connected to CSI Server v1.1.0',
                 server_time: Date.now(),
                 connection_id: connectionId
             });

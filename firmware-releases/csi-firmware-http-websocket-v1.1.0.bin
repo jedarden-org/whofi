@@ -1,4 +1,4 @@
-# ESP32-S3 CSI Firmware Binary - HTTP + WebSocket Configuration v2.0.0 [RECOMMENDED]
+# ESP32-S3 CSI Firmware Binary - HTTP + WebSocket Configuration v1.1.0 [RECOMMENDED]
 # 
 # Configuration: Real-time streaming optimization (320KB target)
 # Architecture: HTTP REST API + WebSocket streaming
@@ -17,7 +17,7 @@
 # - Batch CSI data transmission
 #
 # Flash instructions:
-# esptool.py --chip esp32s3 --port /dev/ttyUSB0 write_flash 0x0 csi-firmware-http-websocket-v2.0.0.bin
+# esptool.py --chip esp32s3 --port /dev/ttyUSB0 write_flash 0x0 csi-firmware-http-websocket-v1.1.0.bin
 #
 # Note: This is a placeholder binary file.
 # Use Docker ESP-IDF build process for actual firmware generation.

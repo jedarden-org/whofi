@@ -1,4 +1,4 @@
-# ESP32-S3 CSI Firmware Selection Guide v2.0.0
+# ESP32-S3 CSI Firmware Selection Guide v1.1.0
 
 ## Overview
 
@@ -155,7 +155,7 @@ docker run --rm -v $(pwd):/project -w /project espressif/idf:v5.1.2 bash -c "
   cp partitions_4mb_ota.csv partitions.csv
   idf.py clean
   idf.py build
-  cp build/csi_firmware.bin ../firmware-releases/csi-firmware-http-only-v2.0.0.bin
+  cp build/csi_firmware.bin ../firmware-releases/csi-firmware-http-only-v1.1.0.bin
 "
 
 # Build HTTP + WebSocket firmware  
@@ -164,7 +164,7 @@ docker run --rm -v $(pwd):/project -w /project espressif/idf:v5.1.2 bash -c "
   cp partitions_4mb_ota.csv partitions.csv
   idf.py clean
   idf.py build
-  cp build/csi_firmware.bin ../firmware-releases/csi-firmware-http-websocket-v2.0.0.bin
+  cp build/csi_firmware.bin ../firmware-releases/csi-firmware-http-websocket-v1.1.0.bin
 "
 ```
 
