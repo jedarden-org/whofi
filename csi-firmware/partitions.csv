@@ -1,7 +1,20 @@
-# ESP-IDF Partition Table for CSI Positioning System
-# Name,     Type, SubType, Offset,  Size, Flags
-# Note: if you have increased the bootloader size, make sure to update the offsets to avoid overlap
-nvs,      data, nvs,     0x9000,  0x6000,
-phy_init, data, phy,     0xf000,  0x1000,
-factory,  app,  factory, 0x10000, 2M,
-storage,  data, spiffs,  ,        0x100000,
+# ESP32-S3 4MB Flash OTA Partition Table for CSI Positioning System
+# Optimized for minimal firmware with OTA capability
+# Flash Size: 4MB (4,194,304 bytes = 0x400000)
+# Name,     Type, SubType, Offset,   Size,     Flags
+
+# System partitions (required)
+nvs,        data, nvs,     0x9000,   0x4000,   # NVS storage (16KB)
+phy_init,   data, phy,     0xd000,   0x1000,   # PHY init data (4KB)
+
+# OTA partitions (dual app slots for reliable updates)
+otadata,    data, ota,     0xe000,   0x2000,   # OTA data selector (8KB)
+ota_0,      app,  ota_0,   0x10000,  0x1A0000, # Primary app slot (1.625MB)
+ota_1,      app,  ota_1,   0x1B0000, 0x1A0000, # Secondary app slot (1.625MB)
+
+# Data storage (minimal)
+spiffs,     data, spiffs,  0x350000, 0xB0000,  # File system (704KB)
+
+# Total size: 4MB (0x400000)
+# App payload per OTA slot: 1.625MB (1,703,936 bytes)
+# Much larger than ESPHome limit but perfect for minimal CSI firmware
