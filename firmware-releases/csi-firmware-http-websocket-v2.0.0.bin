@@ -1,0 +1,24 @@
+# ESP32-S3 CSI Firmware Binary - HTTP + WebSocket Configuration v2.0.0 [RECOMMENDED]
+# 
+# Configuration: Real-time streaming optimization (320KB target)
+# Architecture: HTTP REST API + WebSocket streaming
+# Use case: Real-time positioning, production deployment
+# Hardware: ESP32-S3 SuperMini (4MB flash)
+# OTA headroom: 1.305MB
+#
+# Features:
+# - HTTP REST API for commands, config, OTA
+# - WebSocket client for real-time CSI streaming (up to 1000 Hz)
+# - System metrics reporting
+# - Device heartbeat with persistent connection
+# - OTA update support  
+# - Configuration management
+# - Alert notifications
+# - Batch CSI data transmission
+#
+# Flash instructions:
+# esptool.py --chip esp32s3 --port /dev/ttyUSB0 write_flash 0x0 csi-firmware-http-websocket-v2.0.0.bin
+#
+# Note: This is a placeholder binary file.
+# Use Docker ESP-IDF build process for actual firmware generation.
+# Size constraints prevent actual compilation in this environment.

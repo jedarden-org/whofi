@@ -1,0 +1,122 @@
+version: '3.8'
+
+services:
+  # InfluxDB Time-series Database
+  influxdb:
+    image: influxdb:2.7
+    container_name: csi-influxdb
+    ports:
+      - "8086:8086"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUXDB_ADMIN_PASSWORD:-changeme}
+      - DOCKER_INFLUXDB_INIT_ORG=csi-org
+      - DOCKER_INFLUXDB_INIT_BUCKET=csi_data
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXDB_TOKEN:-changeme}
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+      - influxdb_config:/etc/influxdb2
+    restart: unless-stopped
+    networks:
+      - csi_network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: csi-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-changeme}
+    restart: unless-stopped
+    networks:
+      - csi_network
+
+  # NTP Server (Chrony)
+  chrony:
+    image: publicarray/chrony:latest
+    container_name: csi-ntp
+    ports:
+      - "123:123/udp"
+    environment:
+      - NTP_SERVERS=pool.ntp.org
+    volumes:
+      - ./config/chrony/chrony.conf:/etc/chrony/chrony.conf:ro
+    restart: unless-stopped
+    networks:
+      - csi_network
+
+  # Backend API Server (Node.js) - Updated for HTTP + WebSocket
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: csi-backend-v2
+    ports:
+      - "3000:3000"  # HTTP REST API
+      - "8080:8080"  # WebSocket server port
+    environment:
+      - NODE_ENV=production
+      - API_VERSION=v2.0.0
+      # MQTT REMOVED - HTTP + WebSocket only
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_TOKEN=${INFLUXDB_TOKEN:-changeme}
+      - INFLUXDB_ORG=csi-org
+      - INFLUXDB_BUCKET=csi_data
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-changeme}
+      - NTP_SERVER=chrony
+      - WEBSOCKET_ENABLED=true
+      - WEBSOCKET_PORT=8080
+      - HTTP_COMPRESSION=true
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - ./config:/app/config
+      - ./firmware-releases:/app/firmware
+    depends_on:
+      - influxdb
+      - redis
+      - chrony
+      # mosquitto removed - no longer needed
+    restart: unless-stopped
+    networks:
+      - csi_network
+
+  # Frontend Web Server (Nginx + React) - Updated for WebSocket
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: csi-frontend-v2
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - REACT_APP_API_URL=http://localhost:3000
+      - REACT_APP_WS_URL=ws://localhost:8080
+      - REACT_APP_VERSION=v2.0.0
+    volumes:
+      - ./config/nginx/nginx-v2.conf:/etc/nginx/nginx.conf:ro
+      - ./config/nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - csi_network
+
+volumes:
+  influxdb_data:
+  influxdb_config:
+  redis_data:
+  # mosquitto volumes removed
+
+networks:
+  csi_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

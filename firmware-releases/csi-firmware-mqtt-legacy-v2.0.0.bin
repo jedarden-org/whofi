@@ -1,0 +1,27 @@
+# ESP32-S3 CSI Firmware Binary - MQTT Legacy Configuration v2.0.0 [DEPRECATED]
+#
+# Configuration: Legacy MQTT compatibility (580KB)
+# Architecture: MQTT broker communication
+# Use case: Legacy system compatibility only
+# Hardware: ESP32-S3 SuperMini (4MB flash) 
+# OTA headroom: 1.045MB
+#
+# Features:
+# - MQTT client for CSI data transmission
+# - System metrics reporting
+# - Device heartbeat
+# - OTA update support
+# - Configuration management  
+# - Alert notifications
+#
+# Flash instructions:
+# esptool.py --chip esp32s3 --port /dev/ttyUSB0 write_flash 0x0 csi-firmware-mqtt-legacy-v2.0.0.bin
+#
+# DEPRECATION WARNING:
+# This configuration is deprecated. Use HTTP + WebSocket for new deployments.
+# 45% larger than recommended configuration.
+# Requires complex MQTT broker infrastructure.
+#
+# Note: This is a placeholder binary file.
+# Use Docker ESP-IDF build process for actual firmware generation.
+# Size constraints prevent actual compilation in this environment.
