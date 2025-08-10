@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  esp-idf:
+    build:
+      context: .
+      dockerfile: Dockerfile.esp-idf
+      args:
+        USER_ID: ${UID:-1000}
+        GROUP_ID: ${GID:-1000}
+    container_name: csi-firmware-builder
+    volumes:
+      - .:/project
+      - esp_idf_tools:/home/espdev/.espressif
+      # Mount USB devices for flashing (if available)
+      - /dev:/dev
+    privileged: true  # Required for USB device access
+    working_dir: /project
+    environment:
+      - IDF_TOOLS_PATH=/home/espdev/.espressif
+    stdin_open: true
+    tty: true
+    networks:
+      - esp_dev
+    command: /bin/bash
+
+  # Test server for CSI data reception
+  test-server:
+    build:
+      context: ../csi-server/backend
+      dockerfile: Dockerfile
+    container_name: csi-test-server
+    ports:
+      - "3000:3000"
+      - "8080:8080"
+    environment:
+      - NODE_ENV=development
+      - MQTT_BROKER_HOST=test-mosquitto
+    volumes:
+      - ../csi-server/backend:/app
+      - /app/node_modules
+    networks:
+      - esp_dev
+    depends_on:
+      - test-mosquitto
+
+  test-mosquitto:
+    image: eclipse-mosquitto:2.0
+    container_name: csi-test-mosquitto
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./test-config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+    networks:
+      - esp_dev
+
+volumes:
+  esp_idf_tools:
+    name: esp_idf_tools
+
+networks:
+  esp_dev:
+    name: esp_dev_network
+    driver: bridge

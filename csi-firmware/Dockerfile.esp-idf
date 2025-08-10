@@ -1,0 +1,35 @@
+# ESP-IDF Docker Build Environment for CSI Firmware
+FROM espressif/idf:v5.1.2
+
+# Set working directory
+WORKDIR /project
+
+# Install additional tools for testing and analysis
+RUN apt-get update && apt-get install -y \
+    clang-tidy \
+    cppcheck \
+    valgrind \
+    lcov \
+    git \
+    vim \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user for development
+ARG USER_ID=1000
+ARG GROUP_ID=1000
+RUN groupadd -g $GROUP_ID espdev && \
+    useradd -u $USER_ID -g espdev -m -s /bin/bash espdev && \
+    usermod -aG dialout espdev
+
+# Set up ESP-IDF environment for the user
+USER espdev
+RUN echo 'source $IDF_PATH/export.sh' >> /home/espdev/.bashrc
+
+# Copy project files
+COPY --chown=espdev:espdev . /project/
+
+# Expose common ports for development
+EXPOSE 3333 4444
+
+# Default command
+CMD ["/bin/bash"]
