@@ -39,6 +39,12 @@ jobs:
         cd esp-idf
         ./install.sh esp32,esp32s3
     
+    - name: Install ESP-IDF Tools (Always)
+      run: |
+        cd ~/esp/esp-idf
+        ./install.sh esp32,esp32s3
+        echo "ESP-IDF tools installation completed"
+    
     - name: Build ESP32 Firmware
       working-directory: csi-firmware
       run: |
