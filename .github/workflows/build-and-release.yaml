@@ -125,14 +125,14 @@ jobs:
         cd tests
         npm run test:docker
       env:
-        DOCKER_IMAGE: ${{ env.REGISTRY }}/${{ github.repository_owner }}/whofi-unified:${{ github.sha }}
+        DOCKER_IMAGE: ${{ env.REGISTRY }}/${{ github.repository_owner }}/whofi-unified:latest
 
     - name: Run ESP32 telemetry simulation tests
       run: |
         cd tests
         npm run test:telemetry
       env:
-        DOCKER_IMAGE: ${{ env.REGISTRY }}/${{ github.repository_owner }}/whofi-unified:${{ github.sha }}
+        DOCKER_IMAGE: ${{ env.REGISTRY }}/${{ github.repository_owner }}/whofi-unified:latest
 
   # Create Release
   release:

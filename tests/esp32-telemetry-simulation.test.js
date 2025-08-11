@@ -149,9 +149,23 @@ describe('ESP32 Multi-Transmitter Telemetry Simulation', () => {
       // Ignore cleanup errors
     }
     
+    // Use DOCKER_IMAGE environment variable (from GitHub Actions) or fallback to local build
+    const dockerImage = process.env.DOCKER_IMAGE || 'whofi-unified:test';
+    
+    if (!process.env.DOCKER_IMAGE) {
+      // Local development: build the image
+      console.log('🔨 Building unified Docker container locally...');
+      const buildCommand = `cd csi-server && docker build -f Dockerfile.unified -t whofi-unified:test .`;
+      await execAsync(buildCommand);
+    } else {
+      // CI/CD: pull the pre-built image
+      console.log(`🐳 Using pre-built Docker image: ${dockerImage}`);
+      await execAsync(`docker pull ${dockerImage}`);
+    }
+    
     // Start unified container for telemetry testing
     console.log('🚀 Starting unified container for telemetry tests...');
-    const runCommand = `docker run -d --name ${CONTAINER_NAME} -p 80:80 -e NODE_ENV=test whofi-unified:test`;
+    const runCommand = `docker run -d --name ${CONTAINER_NAME} -p 80:80 -e NODE_ENV=test ${dockerImage}`;
     await execAsync(runCommand);
     
     // Wait for container to be ready

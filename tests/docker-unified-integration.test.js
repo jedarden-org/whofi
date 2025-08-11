@@ -34,14 +34,23 @@ describe('Unified Docker Container Integration Tests', () => {
       // Ignore errors if container doesn't exist
     }
     
-    // Build unified container
-    console.log('🔨 Building unified Docker container...');
-    const buildCommand = `cd /workspaces/ardenone-cluster-ws/whofi-org/csi-server && docker build -f Dockerfile.unified -t whofi-unified:test .`;
-    await execAsync(buildCommand);
+    // Use DOCKER_IMAGE environment variable (from GitHub Actions) or fallback to local build
+    const dockerImage = process.env.DOCKER_IMAGE || 'whofi-unified:test';
+    
+    if (!process.env.DOCKER_IMAGE) {
+      // Local development: build the image
+      console.log('🔨 Building unified Docker container locally...');
+      const buildCommand = `cd csi-server && docker build -f Dockerfile.unified -t whofi-unified:test .`;
+      await execAsync(buildCommand);
+    } else {
+      // CI/CD: pull the pre-built image
+      console.log(`🐳 Using pre-built Docker image: ${dockerImage}`);
+      await execAsync(`docker pull ${dockerImage}`);
+    }
     
     // Start container with minimal environment (no external dependencies for basic tests)
     console.log('🚀 Starting unified container...');
-    const runCommand = `docker run -d --name ${CONTAINER_NAME} -p 80:80 -e NODE_ENV=test whofi-unified:test`;
+    const runCommand = `docker run -d --name ${CONTAINER_NAME} -p 80:80 -e NODE_ENV=test ${dockerImage}`;
     await execAsync(runCommand);
     
     // Wait for container to be ready
