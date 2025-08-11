@@ -10,6 +10,7 @@ jobs:
   # ESP32 Firmware Build and Test
   firmware-test:
     runs-on: jedarden-org-apexalgo-iad-runners
+    timeout-minutes: 30
     steps:
     - uses: actions/checkout@v3
       with:
@@ -20,7 +21,17 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y git wget flex bison gperf python3 python3-pip python3-venv cmake ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0
     
+    - name: Cache ESP-IDF
+      uses: actions/cache@v4
+      id: cache-esp-idf
+      with:
+        path: ~/esp
+        key: esp-idf-v5.1.2-${{ runner.os }}-ci
+        restore-keys: |
+          esp-idf-v5.1.2-
+    
     - name: Install ESP-IDF
+      if: steps.cache-esp-idf.outputs.cache-hit != 'true'
       run: |
         mkdir -p ~/esp
         cd ~/esp

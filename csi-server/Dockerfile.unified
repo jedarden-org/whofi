@@ -3,7 +3,7 @@
 # Optimized for minimal port exposure and ESP32 API access
 
 # Stage 1: Build React frontend
-FROM public.ecr.aws/docker/library/node:18-alpine AS frontend-builder
+FROM node:18-alpine AS frontend-builder
 
 WORKDIR /app/frontend
 
@@ -16,7 +16,7 @@ COPY frontend/ .
 RUN npm run build
 
 # Stage 2: Build backend dependencies  
-FROM public.ecr.aws/docker/library/node:18-alpine AS backend-builder
+FROM node:18-alpine AS backend-builder
 
 WORKDIR /app/backend
 
@@ -28,7 +28,7 @@ COPY backend/package*.json ./
 RUN npm ci --only=production && npm cache clean --force
 
 # Stage 3: Unified production container
-FROM public.ecr.aws/docker/library/node:18-alpine
+FROM node:18-alpine
 
 # Install nginx and system dependencies
 RUN apk add --no-cache \
