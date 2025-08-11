@@ -136,8 +136,17 @@ class CSIBackendServer {
             });
         });
 
-        // API health endpoint (direct route for backward compatibility)
-        this.app.get('/api/health', (req, res) => {
+        // Note: /api/health now handled by API router to avoid routing conflicts
+
+        // API Routes
+        this.app.use('/api', this.createAPIRouter());
+    }
+
+    createAPIRouter() {
+        const router = express.Router();
+
+        // Health check endpoint 
+        router.get('/health', (req, res) => {
             res.json({
                 status: 'healthy',
                 service: 'csi-backend',
@@ -147,13 +156,6 @@ class CSIBackendServer {
                 stats: state.stats
             });
         });
-
-        // API Routes
-        this.app.use('/api', this.createAPIRouter());
-    }
-
-    createAPIRouter() {
-        const router = express.Router();
 
         // Node management
         router.get('/nodes', (req, res) => {
