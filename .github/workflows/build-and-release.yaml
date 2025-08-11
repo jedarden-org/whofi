@@ -68,61 +68,64 @@ jobs:
         path: csi-firmware/whofi-firmware-*.tar.gz
         retention-days: 30
 
-  # Build Docker Images (temporarily disabled - missing Dockerfiles)
-  # build-docker:
-  #   runs-on: jedarden-org-apexalgo-iad-runners
-  #   permissions:
-  #     contents: read
-  #     packages: write
-  #   strategy:
-  #     matrix:
-  #       include:
-  #         - context: csi-server
-  #           dockerfile: backend/Dockerfile
-  #           image: whofi-backend
-  #         - context: csi-server
-  #           dockerfile: frontend/Dockerfile
-  #           image: whofi-frontend
-  #   steps:
-  #   - uses: actions/checkout@v4
-  #   
-  #   - name: Set up Docker Buildx
-  #     uses: docker/setup-buildx-action@v3
-  #   
-  #   - name: Log in to Container Registry
-  #     uses: docker/login-action@v3
-  #     with:
-  #       registry: ${{ env.REGISTRY }}
-  #       username: ${{ github.actor }}
-  #       password: ${{ secrets.GITHUB_TOKEN }}
-  #   
-  #   - name: Extract metadata
-  #     id: meta
-  #     uses: docker/metadata-action@v5
-  #     with:
-  #       images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ matrix.image }}
-  #       tags: |
-  #         type=ref,event=branch
-  #         type=ref,event=pr
-  #         type=semver,pattern={{version}}
-  #         type=semver,pattern={{major}}.{{minor}}
-  #         type=sha
-  #   
-  #   - name: Build and push Docker image
-  #     uses: docker/build-push-action@v5
-  #     with:
-  #       context: ${{ matrix.context }}
-  #       file: ${{ matrix.context }}/${{ matrix.dockerfile }}
-  #       push: true
-  #       tags: ${{ steps.meta.outputs.tags }}
-  #       labels: ${{ steps.meta.outputs.labels }}
-  #       cache-from: type=gha
-  #       cache-to: type=gha,mode=max
+  # Build Unified Docker Container
+  build-unified-docker:
+    runs-on: jedarden-org-apexalgo-iad-runners
+    permissions:
+      contents: read
+      packages: write
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/whofi-unified
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=sha
+    
+    - name: Build and push unified Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: csi-server
+        file: csi-server/Dockerfile.unified
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Install TDD test dependencies
+      run: |
+        cd tests
+        npm install
+    
+    - name: Run unified container TDD integration tests
+      run: |
+        cd tests
+        npm run test:docker
+      env:
+        DOCKER_IMAGE: ${{ env.REGISTRY }}/${{ github.repository_owner }}/whofi-unified:${{ github.sha }}
 
   # Create Release
   release:
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [build-firmware]
+    needs: [build-firmware, build-unified-docker]
     runs-on: jedarden-org-apexalgo-iad-runners
     permissions:
       contents: write
@@ -151,20 +154,25 @@ jobs:
         - Download the firmware package below
         - Flash using: \`esptool.py write_flash @flash_args\`
         
-        ### Docker Images
-        - Backend: \`ghcr.io/jedarden-org/whofi-backend:${{ github.ref_name }}\`
-        - Frontend: \`ghcr.io/jedarden-org/whofi-frontend:${{ github.ref_name }}\`
+        ### Unified Docker Image
+        - **New**: Unified container combining frontend and backend: \`ghcr.io/jedarden-org/whofi-unified:${{ github.ref_name }}\`
+        - Exposes only port 80 for both UI access and ESP32 API endpoints
+        - Optimized with rate limiting and security headers
+        - Built-in TDD integration tests for seamless operation
         
         ## 🔧 Quick Start
         
         \`\`\`bash
-        # Pull Docker images
-        docker pull ghcr.io/jedarden-org/whofi-backend:${{ github.ref_name }}
-        docker pull ghcr.io/jedarden-org/whofi-frontend:${{ github.ref_name }}
+        # Pull unified Docker image
+        docker pull ghcr.io/jedarden-org/whofi-unified:${{ github.ref_name }}
         
-        # Run with Docker Compose
-        cd csi-server
-        docker-compose up -d
+        # Run unified container (single port exposure)
+        docker run -d -p 80:80 --name whofi-system \\
+          -e NODE_ENV=production \\
+          ghcr.io/jedarden-org/whofi-unified:${{ github.ref_name }}
+        
+        # Access UI: http://localhost
+        # ESP32 API: http://localhost/api/
         \`\`\`
         
         ## 📚 Documentation

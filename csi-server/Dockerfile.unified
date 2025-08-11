@@ -1,0 +1,184 @@
+# Multi-stage unified container for CSI Positioning System
+# Combines React frontend and Node.js backend in single container
+# Optimized for minimal port exposure and ESP32 API access
+
+# Stage 1: Build React frontend
+FROM public.ecr.aws/docker/library/node:18-alpine AS frontend-builder
+
+WORKDIR /app/frontend
+
+# Copy frontend package files and install dependencies
+COPY frontend/package*.json ./
+RUN npm ci
+
+# Copy frontend source and build static assets
+COPY frontend/ .
+RUN npm run build
+
+# Stage 2: Build backend dependencies  
+FROM public.ecr.aws/docker/library/node:18-alpine AS backend-builder
+
+WORKDIR /app/backend
+
+# Install system dependencies for native modules
+RUN apk add --no-cache python3 make g++ && ln -sf python3 /usr/bin/python
+
+# Copy backend package files and install production dependencies
+COPY backend/package*.json ./
+RUN npm ci --only=production && npm cache clean --force
+
+# Stage 3: Unified production container
+FROM public.ecr.aws/docker/library/node:18-alpine
+
+# Install nginx and system dependencies
+RUN apk add --no-cache \
+    nginx \
+    python3 \
+    make \
+    g++ \
+    && ln -sf python3 /usr/bin/python
+
+# Create application structure
+WORKDIR /app
+
+# Copy backend application and dependencies
+COPY --from=backend-builder /app/backend/node_modules ./node_modules
+COPY backend/ .
+
+# Copy built frontend static files to nginx document root
+COPY --from=frontend-builder /app/frontend/build /usr/share/nginx/html
+
+# Create nginx configuration for unified service
+RUN mkdir -p /etc/nginx/conf.d && \
+    rm -f /etc/nginx/conf.d/default.conf
+
+# Configure nginx to serve frontend and proxy API to backend
+COPY <<'EOF' /etc/nginx/nginx.conf
+events {
+    worker_connections 1024;
+}
+
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+    
+    # Logging
+    access_log /var/log/nginx/access.log;
+    error_log /var/log/nginx/error.log;
+    
+    # Performance
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+    keepalive_timeout 65;
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+
+    # Rate limiting for ESP32 API
+    limit_req_zone $remote_addr zone=api:10m rate=10r/s;
+    limit_req_zone $remote_addr zone=websocket:10m rate=5r/s;
+
+    server {
+        listen 80;
+        server_name localhost;
+        
+        # Security headers
+        add_header X-Frame-Options SAMEORIGIN;
+        add_header X-Content-Type-Options nosniff;
+        add_header X-XSS-Protection "1; mode=block";
+        
+        # Serve React frontend static files
+        location / {
+            root /usr/share/nginx/html;
+            index index.html;
+            try_files $uri $uri/ /index.html;
+        }
+
+        # Health check endpoint
+        location /health {
+            access_log off;
+            return 200 "OK";
+            add_header Content-Type text/plain;
+        }
+
+        # ESP32 API endpoints - rate limited
+        location /api/ {
+            limit_req zone=api burst=20 nodelay;
+            proxy_pass http://localhost:3000;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection 'upgrade';
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_cache_bypass $http_upgrade;
+        }
+
+        # WebSocket connection for real-time data
+        location /ws {
+            limit_req zone=websocket burst=10 nodelay;
+            proxy_pass http://localhost:8080;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "Upgrade";
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # Block direct access to backend ports
+        location ~ ^/(3000|8080) {
+            deny all;
+            return 403;
+        }
+    }
+}
+EOF
+
+# Create startup script to run both nginx and backend
+COPY <<'EOF' /app/start-unified.sh
+#!/bin/sh
+set -e
+
+echo "🚀 Starting WhōFi CSI Unified Container..."
+
+# Start nginx in background
+echo "📡 Starting Nginx frontend server..."
+nginx -t && nginx &
+
+# Give nginx time to start
+sleep 2
+
+# Start backend Node.js server
+echo "⚡ Starting Node.js backend server..."
+exec node server.js
+EOF
+
+RUN chmod +x /app/start-unified.sh
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S whofi && \
+    adduser -S whofi -u 1001 -G whofi
+
+# Set proper permissions
+RUN chown -R whofi:whofi /app && \
+    chown -R whofi:whofi /usr/share/nginx/html && \
+    chown -R whofi:whofi /var/log/nginx && \
+    chown -R whofi:whofi /var/lib/nginx && \
+    chown -R whofi:whofi /var/cache/nginx && \
+    chown -R whofi:whofi /etc/nginx
+
+# Switch to non-root user
+USER whofi
+
+# Expose only the unified port (80) for both UI and ESP32 API access
+EXPOSE 80
+
+# Health check for the unified service
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost/health || exit 1
+
+# Start the unified service
+CMD ["/app/start-unified.sh"]

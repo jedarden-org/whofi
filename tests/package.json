@@ -1,0 +1,36 @@
+{
+  "name": "whofi-unified-container-tests",
+  "version": "1.0.0",
+  "description": "TDD Integration tests for WhōFi unified Docker container",
+  "scripts": {
+    "test": "jest",
+    "test:docker": "jest docker-unified-integration.test.js",
+    "test:watch": "jest --watch",
+    "test:ci": "jest --ci --coverage --watchAll=false"
+  },
+  "dependencies": {
+    "axios": "^1.5.0",
+    "ws": "^8.14.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "@types/jest": "^29.5.5"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testTimeout": 60000,
+    "verbose": true,
+    "collectCoverage": false,
+    "testMatch": ["**/*.test.js"],
+    "setupFilesAfterEnv": []
+  },
+  "keywords": [
+    "docker",
+    "integration-test",
+    "tdd",
+    "whofi",
+    "csi"
+  ],
+  "author": "WhōFi Team",
+  "license": "MIT"
+}
