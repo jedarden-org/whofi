@@ -125,20 +125,7 @@ class CSIBackendServer {
     }
 
     initializeRoutes() {
-        // Health check
-        this.app.get('/health', (req, res) => {
-            res.json({
-                status: 'healthy',
-                uptime: Date.now() - state.stats.uptime,
-                nodes: state.nodes.size,
-                positions: state.positions.size,
-                stats: state.stats
-            });
-        });
-
-        // Note: /api/health now handled by API router to avoid routing conflicts
-
-        // API Routes
+        // API Routes - health check now handled by API router
         this.app.use('/api', this.createAPIRouter());
     }
 

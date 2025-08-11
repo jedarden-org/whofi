@@ -1,6 +1,6 @@
 {
   "name": "csi-backend-server",
-  "version": "1.2.13",
+  "version": "1.2.14",
   "description": "CSI Processing Backend Server with MQTT, WebSocket, and REST API",
   "main": "server.js",
   "scripts": {
