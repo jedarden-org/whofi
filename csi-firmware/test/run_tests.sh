@@ -13,10 +13,10 @@ if [ -f "../build/csi_positioning_firmware.bin" ]; then
     FIRMWARE_SIZE=$(stat -f%z "../build/csi_positioning_firmware.bin" 2>/dev/null || stat -c%s "../build/csi_positioning_firmware.bin" 2>/dev/null)
     echo "✅ Firmware binary exists: csi_positioning_firmware.bin (${FIRMWARE_SIZE} bytes)"
     
-    # Test firmware size constraint (must be under 1MB for non-OTA ESP32)
-    MAX_SIZE=1048576  # 1MB in bytes
+    # Test firmware size constraint (must be under 1.625MB for ESP32-S3 4MB OTA partition)
+    MAX_SIZE=1703936  # 1.625MB in bytes (0x1A0000)
     if [ "$FIRMWARE_SIZE" -lt "$MAX_SIZE" ]; then
-        echo "✅ Firmware size OK: ${FIRMWARE_SIZE} bytes < ${MAX_SIZE} bytes (1MB limit)"
+        echo "✅ Firmware size OK: ${FIRMWARE_SIZE} bytes < ${MAX_SIZE} bytes (1.625MB OTA limit)"
     else
         echo "❌ Firmware too large: ${FIRMWARE_SIZE} bytes > ${MAX_SIZE} bytes"
         exit 1
