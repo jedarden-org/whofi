@@ -93,7 +93,13 @@ class CSIBackendServer {
     constructor() {
         this.app = express();
         this.server = http.createServer(this.app);
-        this.wss = new WebSocket.Server({ port: CONFIG.WS_PORT });
+        
+        // In container/test mode, run WebSocket on same server to avoid port conflicts
+        if (process.env.NODE_ENV === 'test' || process.env.CONTAINER_MODE) {
+            this.wss = new WebSocket.Server({ server: this.server });
+        } else {
+            this.wss = new WebSocket.Server({ port: CONFIG.WS_PORT });
+        }
         
         // Initialize services
         this.initializeMiddleware();
