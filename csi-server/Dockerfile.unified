@@ -137,24 +137,8 @@ http {
 }
 EOF
 
-# Create startup script to run both nginx and backend
-COPY <<'EOF' /app/start-unified.sh
-#!/bin/sh
-set -e
-
-echo "🚀 Starting WhōFi CSI Unified Container..."
-
-# Start nginx in background
-echo "📡 Starting Nginx frontend server..."
-nginx -t && nginx &
-
-# Give nginx time to start
-sleep 2
-
-# Start backend Node.js server
-echo "⚡ Starting Node.js backend server..."
-exec node server.js
-EOF
+# Copy startup script
+COPY start-unified.sh /app/start-unified.sh
 
 # Create directories and set permissions for nginx
 RUN mkdir -p /var/log/nginx /var/lib/nginx /var/cache/nginx && \

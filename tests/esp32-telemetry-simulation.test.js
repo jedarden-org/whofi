@@ -155,7 +155,7 @@ describe('ESP32 Multi-Transmitter Telemetry Simulation', () => {
     if (!process.env.DOCKER_IMAGE) {
       // Local development: build the image
       console.log('🔨 Building unified Docker container locally...');
-      const buildCommand = `cd csi-server && docker build -f Dockerfile.unified -t whofi-unified:test .`;
+      const buildCommand = `docker build -f csi-server/Dockerfile.unified -t whofi-unified:test csi-server`;
       await execAsync(buildCommand);
     } else {
       // CI/CD: pull the pre-built image
