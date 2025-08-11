@@ -7,7 +7,7 @@ mkdir -p /var/log/nginx /var/lib/nginx/logs /var/cache/nginx
 
 # Start backend Node.js server in background
 echo "📡 Starting backend server on port 3001..."
-cd /app/backend && PORT=3001 node server.js &
+cd /app && PORT=3001 node server.js &
 BACKEND_PID=$!
 
 # Wait for backend to initialize
