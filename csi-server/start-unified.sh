@@ -32,7 +32,7 @@ echo "✅ Backend started with PID: $BACKEND_PID"
 # Test backend health
 echo "🔍 Testing backend health..."
 for i in {1..10}; do
-    if curl -f http://127.0.0.1:3001/health 2>/dev/null; then
+    if curl -f http://127.0.0.1:3001/api/health 2>/dev/null; then
         echo "✅ Backend health check passed"
         break
     fi
