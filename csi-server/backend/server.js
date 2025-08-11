@@ -124,6 +124,17 @@ class CSIBackendServer {
             });
         });
 
+        // API health endpoint (direct route for backward compatibility)
+        this.app.get('/api/health', (req, res) => {
+            res.json({
+                status: 'healthy',
+                uptime: Date.now() - state.stats.uptime,
+                nodes: state.nodes.size,
+                positions: state.positions.size,
+                stats: state.stats
+            });
+        });
+
         // API Routes
         this.app.use('/api', this.createAPIRouter());
     }
@@ -210,6 +221,31 @@ class CSIBackendServer {
             const config = req.body;
             logger.info('Configuration updated', config);
             res.json({ success: true, config });
+        });
+
+        // CSI data submission endpoint (for testing)
+        router.post('/csi/submit', (req, res) => {
+            const { nodeId, rssi, channel, rate, csi_data } = req.body;
+            
+            if (!nodeId) {
+                return res.status(400).json({ error: 'nodeId is required' });
+            }
+            
+            const mockData = {
+                rssi: rssi || -50,
+                channel: channel || 1,
+                rate: rate || 54,
+                csi_data: csi_data || Array.from({ length: 52 }, () => Math.random() * 100)
+            };
+            
+            this.processCSIData(nodeId, mockData);
+            
+            res.json({
+                success: true,
+                message: 'CSI data received',
+                nodeId,
+                timestamp: Date.now()
+            });
         });
 
         // Statistics
