@@ -8,11 +8,11 @@ FROM node:18-alpine AS frontend-builder
 WORKDIR /app/frontend
 
 # Copy frontend package files and install dependencies
-COPY frontend/package*.json ./
+COPY csi-server/frontend/package*.json ./
 RUN npm ci
 
 # Copy frontend source and build static assets
-COPY frontend/ .
+COPY csi-server/frontend/ .
 RUN npm run build
 
 # Stage 2: Build backend dependencies  
@@ -24,7 +24,7 @@ WORKDIR /app/backend
 RUN apk add --no-cache python3 make g++ && ln -sf python3 /usr/bin/python
 
 # Copy backend package files and install production dependencies
-COPY backend/package*.json ./
+COPY csi-server/backend/package*.json ./
 RUN npm ci --only=production && npm cache clean --force
 
 # Stage 3: Unified production container
@@ -43,7 +43,7 @@ WORKDIR /app
 
 # Copy backend application and dependencies
 COPY --from=backend-builder /app/backend/node_modules ./node_modules
-COPY backend/ .
+COPY csi-server/backend/ .
 
 # Copy built frontend static files to nginx document root
 COPY --from=frontend-builder /app/frontend/build /usr/share/nginx/html
@@ -138,7 +138,7 @@ http {
 EOF
 
 # Copy startup script
-COPY start-unified.sh /app/start-unified.sh
+COPY csi-server/start-unified.sh /app/start-unified.sh
 
 # Create directories and set permissions for nginx
 RUN mkdir -p /var/log/nginx /var/lib/nginx /var/cache/nginx && \
