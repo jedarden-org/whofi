@@ -99,9 +99,15 @@ class CSIBackendServer {
         this.initializeMiddleware();
         this.initializeRoutes();
         this.initializeWebSocket();
-        this.initializeMQTT();
-        this.initializeDatabase();
-        this.initializeRedis();
+        
+        // Initialize external services with error handling for test environments
+        if (process.env.NODE_ENV !== 'test') {
+            this.initializeMQTT();
+            this.initializeDatabase();
+            this.initializeRedis();
+        } else {
+            logger.info('Skipping external service initialization in test environment');
+        }
     }
 
     initializeMiddleware() {
