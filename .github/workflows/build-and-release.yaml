@@ -122,6 +122,13 @@ jobs:
       env:
         DOCKER_IMAGE: ${{ env.REGISTRY }}/${{ github.repository_owner }}/whofi-unified:${{ github.sha }}
 
+    - name: Run ESP32 telemetry simulation tests
+      run: |
+        cd tests
+        npm run test:telemetry
+      env:
+        DOCKER_IMAGE: ${{ env.REGISTRY }}/${{ github.repository_owner }}/whofi-unified:${{ github.sha }}
+
   # Create Release
   release:
     if: startsWith(github.ref, 'refs/tags/')

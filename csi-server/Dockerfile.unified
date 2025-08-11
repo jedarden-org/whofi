@@ -156,22 +156,10 @@ echo "⚡ Starting Node.js backend server..."
 exec node server.js
 EOF
 
-RUN chmod +x /app/start-unified.sh
-
-# Create non-root user for security
-RUN addgroup -g 1001 -S whofi && \
-    adduser -S whofi -u 1001 -G whofi
-
-# Set proper permissions
-RUN chown -R whofi:whofi /app && \
-    chown -R whofi:whofi /usr/share/nginx/html && \
-    chown -R whofi:whofi /var/log/nginx && \
-    chown -R whofi:whofi /var/lib/nginx && \
-    chown -R whofi:whofi /var/cache/nginx && \
-    chown -R whofi:whofi /etc/nginx
-
-# Switch to non-root user
-USER whofi
+# Create directories and set permissions for nginx
+RUN mkdir -p /var/log/nginx /var/lib/nginx /var/cache/nginx && \
+    chmod -R 755 /var/log/nginx /var/lib/nginx /var/cache/nginx && \
+    chmod +x /app/start-unified.sh
 
 # Expose only the unified port (80) for both UI and ESP32 API access
 EXPOSE 80
