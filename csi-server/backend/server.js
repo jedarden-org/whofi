@@ -128,6 +128,7 @@ class CSIBackendServer {
         this.app.get('/api/health', (req, res) => {
             res.json({
                 status: 'healthy',
+                service: 'csi-backend',
                 uptime: Date.now() - state.stats.uptime,
                 nodes: state.nodes.size,
                 positions: state.positions.size,
@@ -245,6 +246,144 @@ class CSIBackendServer {
                 message: 'CSI data received',
                 nodeId,
                 timestamp: Date.now()
+            });
+        });
+
+        // ESP32 device-specific CSI data endpoint
+        router.post('/csi/:deviceId/data', (req, res) => {
+            const { deviceId } = req.params;
+            const csiData = req.body;
+            
+            if (!deviceId) {
+                return res.status(400).json({ error: 'deviceId is required' });
+            }
+
+            // Extract relevant CSI data from ESP32 telemetry format
+            const processedData = {
+                rssi: csiData.wifi_info?.rssi || csiData.environmental?.wifi_strength || -50,
+                channel: csiData.wifi_info?.channel || 1,
+                rate: csiData.csi_data?.sampling_rate || 1000,
+                csi_data: csiData.csi_data?.matrix?.map(sc => sc.amplitude) || Array.from({ length: 52 }, () => Math.random() * 100),
+                timestamp: csiData.timestamp || Date.now(),
+                device_id: csiData.device_id || deviceId,
+                mac_address: csiData.mac_address,
+                location: csiData.location
+            };
+            
+            this.processCSIData(deviceId, processedData);
+            
+            res.json({
+                success: true,
+                message: 'ESP32 CSI data received',
+                nodeId: deviceId,
+                timestamp: Date.now(),
+                processed: true
+            });
+        });
+
+        // ESP32 heartbeat endpoint
+        router.post('/csi/:deviceId/heartbeat', (req, res) => {
+            const { deviceId } = req.params;
+            const heartbeat = req.body;
+            
+            if (!deviceId) {
+                return res.status(400).json({ error: 'deviceId is required' });
+            }
+
+            const processedHeartbeat = {
+                status: heartbeat.status || 'online',
+                firmware_version: heartbeat.firmware_version,
+                wifi_connected: heartbeat.wifi_connected,
+                uptime: heartbeat.system_info?.uptime || heartbeat.uptime,
+                memoryFree: heartbeat.system_info?.free_heap,
+                temperature: heartbeat.system_info?.cpu_temp,
+                timestamp: heartbeat.timestamp || Date.now()
+            };
+
+            this.handleNodeHeartbeat(deviceId, processedHeartbeat);
+            
+            res.json({
+                success: true,
+                message: 'ESP32 heartbeat received',
+                nodeId: deviceId,
+                timestamp: Date.now(),
+                status: processedHeartbeat.status
+            });
+        });
+
+        // ESP32 device statistics endpoint
+        router.post('/csi/:deviceId/stats', (req, res) => {
+            const { deviceId } = req.params;
+            const stats = req.body;
+            
+            if (!deviceId) {
+                return res.status(400).json({ error: 'deviceId is required' });
+            }
+
+            const processedStats = {
+                packets_sent: stats.packets_sent || 0,
+                packets_received: stats.packets_received || 0,
+                data_rate: stats.data_rate || 0,
+                error_rate: stats.error_rate || 0,
+                signal_quality: stats.signal_quality || 0,
+                positioning_accuracy: stats.positioning_accuracy || 0,
+                timestamp: stats.timestamp || Date.now()
+            };
+
+            this.updateNodeStats(deviceId, processedStats);
+            
+            res.json({
+                success: true,
+                message: 'ESP32 stats received',
+                nodeId: deviceId,
+                timestamp: Date.now(),
+                stats: processedStats
+            });
+        });
+
+        // Bulk CSI data submission endpoint
+        router.post('/csi/bulk', (req, res) => {
+            const { data } = req.body;
+            
+            if (!Array.isArray(data)) {
+                return res.status(400).json({ error: 'data must be an array' });
+            }
+
+            const processed = [];
+            const errors = [];
+
+            data.forEach((item, index) => {
+                try {
+                    const nodeId = item.nodeId || item.csiData?.device_id;
+                    if (!nodeId) {
+                        errors.push({ index, error: 'Missing nodeId or device_id' });
+                        return;
+                    }
+
+                    const csiData = item.csiData || item;
+                    const processedData = {
+                        rssi: csiData.wifi_info?.rssi || csiData.environmental?.wifi_strength || -50,
+                        channel: csiData.wifi_info?.channel || 1,
+                        rate: csiData.csi_data?.sampling_rate || 1000,
+                        csi_data: csiData.csi_data?.matrix?.map(sc => sc.amplitude) || Array.from({ length: 52 }, () => Math.random() * 100),
+                        timestamp: csiData.timestamp || Date.now(),
+                        device_id: csiData.device_id || nodeId
+                    };
+
+                    this.processCSIData(nodeId, processedData);
+                    processed.push({ nodeId, status: 'processed' });
+                } catch (error) {
+                    errors.push({ index, error: error.message });
+                }
+            });
+
+            res.json({
+                success: true,
+                message: 'Bulk CSI data processed',
+                processed: processed.length,
+                errors: errors.length,
+                timestamp: Date.now(),
+                results: { processed, errors }
             });
         });
 
