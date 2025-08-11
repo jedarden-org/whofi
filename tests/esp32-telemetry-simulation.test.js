@@ -168,9 +168,37 @@ describe('ESP32 Multi-Transmitter Telemetry Simulation', () => {
     const runCommand = `docker run -d --name ${CONTAINER_NAME} -p 80:80 -e NODE_ENV=test ${dockerImage}`;
     await execAsync(runCommand);
     
-    // Wait for container to be ready
+    // Wait for container to be ready with health checks
     console.log('⏳ Waiting for container to initialize...');
-    await new Promise(resolve => setTimeout(resolve, 10000));
+    await new Promise(resolve => setTimeout(resolve, 8000));
+    
+    // Verify container is running and healthy
+    console.log('🔍 Checking container health...');
+    try {
+      const containerLogs = await execAsync(`docker logs ${CONTAINER_NAME}`);
+      console.log('📋 Container logs:', containerLogs.stdout.slice(-500)); // Last 500 chars
+    } catch (error) {
+      console.error('❌ Container logs error:', error.message);
+    }
+    
+    // Test backend health endpoint
+    console.log('🏥 Testing backend health endpoint...');
+    let healthCheckPassed = false;
+    for (let attempt = 1; attempt <= 5; attempt++) {
+      try {
+        const healthResponse = await axios.get(`${BASE_URL}/api/health`, { timeout: 3000 });
+        console.log(`✅ Backend health check ${attempt}/5 passed:`, healthResponse.data);
+        healthCheckPassed = true;
+        break;
+      } catch (error) {
+        console.log(`⏳ Backend health check ${attempt}/5 failed:`, error.response?.status || error.code);
+        if (attempt < 5) await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+    }
+    
+    if (!healthCheckPassed) {
+      console.error('❌ Backend health checks failed - proceeding anyway for debugging');
+    }
   }, 90000);
 
   afterAll(async () => {
@@ -188,6 +216,7 @@ describe('ESP32 Multi-Transmitter Telemetry Simulation', () => {
       const device = esp32Devices[0];
       const csiData = device.generateCSIData();
       
+      console.log(`🔬 Testing ESP32 API: POST ${BASE_URL}/api/csi/${device.deviceId}/data`);
       const response = await axios.post(`${BASE_URL}/api/csi/${device.deviceId}/data`, csiData, {
         headers: { 'Content-Type': 'application/json' },
         timeout: 5000
