@@ -40,7 +40,7 @@ describe('Unified Docker Container Integration Tests', () => {
     if (!process.env.DOCKER_IMAGE) {
       // Local development: build the image
       console.log('🔨 Building unified Docker container locally...');
-      const buildCommand = `docker build -f csi-server/Dockerfile.unified -t whofi-unified:test csi-server`;
+      const buildCommand = `docker build -f csi-server/Dockerfile.unified -t whofi-unified:test .`;
       await execAsync(buildCommand);
     } else {
       // CI/CD: pull the pre-built image
