@@ -120,7 +120,7 @@ jobs:
     - name: Build and push unified Docker image
       uses: docker/build-push-action@v5
       with:
-        context: csi-server
+        context: .
         file: csi-server/Dockerfile.unified
         push: true
         tags: ${{ steps.meta.outputs.tags }}
