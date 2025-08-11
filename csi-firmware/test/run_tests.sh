@@ -9,9 +9,9 @@ echo "=================================================="
 
 # Test 1: Build Validation
 echo "📦 Test 1: Build Validation"
-if [ -f "../build/csi_firmware.bin" ]; then
-    FIRMWARE_SIZE=$(stat -f%z "../build/csi_firmware.bin" 2>/dev/null || stat -c%s "../build/csi_firmware.bin" 2>/dev/null)
-    echo "✅ Firmware binary exists: csi_firmware.bin (${FIRMWARE_SIZE} bytes)"
+if [ -f "../build/csi_positioning_firmware.bin" ]; then
+    FIRMWARE_SIZE=$(stat -f%z "../build/csi_positioning_firmware.bin" 2>/dev/null || stat -c%s "../build/csi_positioning_firmware.bin" 2>/dev/null)
+    echo "✅ Firmware binary exists: csi_positioning_firmware.bin (${FIRMWARE_SIZE} bytes)"
     
     # Test firmware size constraint (must be under 1MB for non-OTA ESP32)
     MAX_SIZE=1048576  # 1MB in bytes
@@ -22,7 +22,7 @@ if [ -f "../build/csi_firmware.bin" ]; then
         exit 1
     fi
 else
-    echo "❌ Firmware binary not found: build/csi_firmware.bin"
+    echo "❌ Firmware binary not found: build/csi_positioning_firmware.bin"
     exit 1
 fi
 
