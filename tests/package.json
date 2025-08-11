@@ -5,6 +5,8 @@
   "scripts": {
     "test": "jest",
     "test:docker": "jest docker-unified-integration.test.js",
+    "test:telemetry": "jest esp32-telemetry-simulation.test.js",
+    "test:all": "jest docker-unified-integration.test.js esp32-telemetry-simulation.test.js",
     "test:watch": "jest --watch",
     "test:ci": "jest --ci --coverage --watchAll=false"
   },
