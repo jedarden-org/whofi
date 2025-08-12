@@ -125,7 +125,19 @@ class CSIBackendServer {
     }
 
     initializeRoutes() {
-        // API Routes - health check now handled by API router
+        // Direct health endpoint for nginx proxy (nginx strips /api prefix)
+        this.app.get('/health', (req, res) => {
+            res.json({
+                status: 'healthy',
+                service: 'csi-backend',
+                uptime: Date.now() - state.stats.uptime,
+                nodes: state.nodes.size,
+                positions: state.positions.size,
+                stats: state.stats
+            });
+        });
+
+        // API Routes
         this.app.use('/api', this.createAPIRouter());
     }
 
