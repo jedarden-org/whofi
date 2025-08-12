@@ -29,17 +29,27 @@ fi
 
 echo "✅ Backend started with PID: $BACKEND_PID"
 
-# Test backend health
-echo "🔍 Testing backend health..."
+# Start nginx reverse proxy and test unified health endpoint
+echo "🌐 Starting nginx reverse proxy on port 80..."
+nginx -g "daemon on;" &
+NGINX_PID=$!
+
+# Wait for nginx to initialize
+sleep 3
+
+# Test unified health endpoint (ESP32s will use this path)
+echo "🔍 Testing unified health endpoint via nginx proxy..."
 for i in {1..10}; do
-    if curl -f http://127.0.0.1:3001/api/health 2>/dev/null; then
-        echo "✅ Backend health check passed"
+    if curl -f http://127.0.0.1:80/api/health 2>/dev/null; then
+        echo "✅ Unified health check passed"
         break
     fi
-    echo "⏳ Backend health check attempt $i/10..."
+    echo "⏳ Unified health check attempt $i/10..."
     sleep 2
 done
 
-# Start nginx to serve frontend and proxy API requests
-echo "🌐 Starting nginx reverse proxy on port 80..."
-nginx -g "daemon off;"
+# Switch nginx to foreground mode for container lifecycle
+echo "🔄 Switching nginx to foreground mode..."
+nginx -s quit  # Stop background nginx
+sleep 1
+nginx -g "daemon off;"  # Start in foreground
