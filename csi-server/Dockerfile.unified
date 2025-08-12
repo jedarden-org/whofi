@@ -137,7 +137,7 @@ http {
 }
 EOF
 
-# Copy startup script
+# Copy startup script (v1.2.18 - nginx proxy fix)
 COPY csi-server/start-unified.sh /app/start-unified.sh
 
 # Create directories and set permissions for nginx
