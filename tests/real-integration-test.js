@@ -17,7 +17,7 @@ const { promisify } = require('util');
 const execAsync = promisify(exec);
 
 // Import our ESP32 simulator
-const { ESP32CSISimulator } = require('./esp32-telemetry-simulation.test.js');
+const { ESP32CSISimulator } = require('./esp32-simulator.js');
 
 describe('REAL Integration Tests - Full Backend Validation', () => {
   const CONTAINER_NAME = 'whofi-real-test';

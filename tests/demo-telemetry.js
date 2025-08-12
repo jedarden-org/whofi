@@ -6,7 +6,7 @@
  * Run with: node demo-telemetry.js
  */
 
-const { ESP32CSISimulator } = require('./esp32-telemetry-simulation.test.js');
+const { ESP32CSISimulator } = require('./esp32-simulator.js');
 
 console.log('🏠 ESP32 Multi-Transmitter Telemetry Simulation Demo');
 console.log('=' .repeat(60));
