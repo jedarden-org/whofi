@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🚀 Starting Unified CSI Container..."
+echo "🚀 Starting Unified CSI Container v1.2.17 - NGINX PROXY FIX ACTIVE..."
 
 # Create required directories for nginx
 mkdir -p /var/log/nginx /var/lib/nginx/logs /var/cache/nginx
