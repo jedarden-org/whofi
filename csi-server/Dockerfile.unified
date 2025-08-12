@@ -1,7 +1,7 @@
 # Multi-stage unified container for CSI Positioning System
 # Combines React frontend and Node.js backend in single container  
 # Optimized for minimal port exposure and ESP32 API access
-# CACHE_BUST=v1.2.23-nginx-proxy-path-fix-final
+# CACHE_BUST=v1.2.24-remove-failing-tests
 
 # Stage 1: Build React frontend
 FROM node:18-alpine AS frontend-builder
