@@ -1,6 +1,7 @@
 # Multi-stage unified container for CSI Positioning System
-# Combines React frontend and Node.js backend in single container
+# Combines React frontend and Node.js backend in single container  
 # Optimized for minimal port exposure and ESP32 API access
+# CACHE_BUST=v1.2.22-nginx-proxy-fix
 
 # Stage 1: Build React frontend
 FROM node:18-alpine AS frontend-builder
@@ -52,7 +53,7 @@ COPY --from=frontend-builder /app/frontend/build /usr/share/nginx/html
 RUN mkdir -p /etc/nginx/conf.d && \
     rm -f /etc/nginx/conf.d/default.conf
 
-# Configure nginx to serve frontend and proxy API to backend
+# Configure nginx to serve frontend and proxy API to backend (v1.2.22 - FORCE REBUILD)
 COPY <<'EOF' /etc/nginx/nginx.conf
 events {
     worker_connections 1024;
